@@ -70,7 +70,7 @@
                               <Component id="txtPlacaVeiculo" min="-2" pref="138" max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace min="0" pref="187" max="32767" attributes="0"/>
+                      <EmptySpace min="0" pref="168" max="32767" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -130,7 +130,7 @@
               </Group>
               <EmptySpace min="-2" pref="38" max="-2" attributes="0"/>
               <Component id="btnSalvaResidencia" min="-2" pref="37" max="-2" attributes="0"/>
-              <EmptySpace pref="68" max="32767" attributes="0"/>
+              <EmptySpace pref="252" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

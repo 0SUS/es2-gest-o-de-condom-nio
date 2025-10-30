@@ -44,7 +44,7 @@ public class CadastroResidencia extends javax.swing.JInternalFrame {
 
         jLabel1.setText("*Campo Obrigatório");
 
-        jLabel2.setText("*Tamanho: (m²)");
+        jLabel2.setText("*Área: (m²)");
 
         jLabel3.setText("*Proprietário:");
 
@@ -74,28 +74,24 @@ public class CadastroResidencia extends javax.swing.JInternalFrame {
                         .addComponent(btnSalvaResidencia, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(188, 188, 188)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel6)
+                            .addComponent(jLabel5))
+                        .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel5)
-                                .addGap(50, 50, 50)
-                                .addComponent(txtNumeroResidencia))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel2)
-                                    .addComponent(jLabel3)
-                                    .addComponent(jLabel4)
-                                    .addComponent(jLabel6))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(txtProprietarioResidencia)
-                                    .addComponent(txtTamanhoResidencia)
-                                    .addComponent(txtTelefoneResidencia, javax.swing.GroupLayout.PREFERRED_SIZE, 366, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(txtRuaResidencia))))))
-                .addContainerGap(206, Short.MAX_VALUE))
+                            .addComponent(txtProprietarioResidencia)
+                            .addComponent(txtTamanhoResidencia)
+                            .addComponent(txtTelefoneResidencia, javax.swing.GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
+                            .addComponent(txtRuaResidencia)
+                            .addComponent(txtNumeroResidencia))))
+                .addContainerGap(390, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
                 .addComponent(jLabel1)
-                .addGap(71, 71, 71))
+                .addGap(151, 151, 151))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -124,7 +120,7 @@ public class CadastroResidencia extends javax.swing.JInternalFrame {
                     .addComponent(txtTelefoneResidencia, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(67, 67, 67)
                 .addComponent(btnSalvaResidencia, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(64, Short.MAX_VALUE))
+                .addContainerGap(322, Short.MAX_VALUE))
         );
 
         pack();
