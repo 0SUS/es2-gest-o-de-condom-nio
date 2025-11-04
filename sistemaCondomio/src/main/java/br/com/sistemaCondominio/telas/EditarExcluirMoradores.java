@@ -30,7 +30,7 @@ public class EditarExcluirMoradores extends javax.swing.JInternalFrame {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        tblResidencia = new javax.swing.JTable();
+        tblMoradores = new javax.swing.JTable();
         btnSalvaResidencia = new javax.swing.JButton();
         btnSalvaResidencia1 = new javax.swing.JButton();
         jLabel5 = new javax.swing.JLabel();
@@ -54,7 +54,7 @@ public class EditarExcluirMoradores extends javax.swing.JInternalFrame {
 
         jLabel2.setText("*Campo obrigatório");
 
-        tblResidencia.setModel(new javax.swing.table.DefaultTableModel(
+        tblMoradores.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -65,7 +65,7 @@ public class EditarExcluirMoradores extends javax.swing.JInternalFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        jScrollPane1.setViewportView(tblResidencia);
+        jScrollPane1.setViewportView(tblMoradores);
 
         btnSalvaResidencia.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         btnSalvaResidencia.setText("Deletar");
@@ -232,7 +232,7 @@ public class EditarExcluirMoradores extends javax.swing.JInternalFrame {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable tblResidencia;
+    private javax.swing.JTable tblMoradores;
     private javax.swing.JTextField txtCpfMorador;
     private javax.swing.JTextField txtNomeMorador;
     private javax.swing.JTextField txtNumero;

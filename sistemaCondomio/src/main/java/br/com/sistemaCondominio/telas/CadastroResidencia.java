@@ -87,11 +87,11 @@ public class CadastroResidencia extends javax.swing.JInternalFrame {
                             .addComponent(txtTelefoneResidencia, javax.swing.GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
                             .addComponent(txtRuaResidencia)
                             .addComponent(txtNumeroResidencia))))
-                .addContainerGap(390, Short.MAX_VALUE))
+                .addContainerGap(487, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
                 .addComponent(jLabel1)
-                .addGap(151, 151, 151))
+                .addGap(373, 373, 373))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -120,7 +120,7 @@ public class CadastroResidencia extends javax.swing.JInternalFrame {
                     .addComponent(txtTelefoneResidencia, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(67, 67, 67)
                 .addComponent(btnSalvaResidencia, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(322, Short.MAX_VALUE))
+                .addContainerGap(136, Short.MAX_VALUE))
         );
 
         pack();

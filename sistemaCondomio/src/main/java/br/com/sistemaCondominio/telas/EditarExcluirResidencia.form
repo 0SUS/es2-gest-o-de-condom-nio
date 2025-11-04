@@ -31,11 +31,11 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Component id="btnSalvaResidencia" min="-2" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="jScrollPane1" min="-2" pref="691" max="-2" attributes="0"/>
                               <Group type="102" attributes="0">
                                   <Component id="txtPesquisaResidencia" min="-2" pref="553" max="-2" attributes="0"/>
-                                  <EmptySpace max="32767" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
                                   <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
@@ -64,7 +64,7 @@
                       </Group>
                   </Group>
               </Group>
-              <EmptySpace pref="132" max="32767" attributes="0"/>
+              <EmptySpace pref="60" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -72,12 +72,14 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="txtPesquisaResidencia" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="jLabel1" alignment="1" min="-2" pref="22" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="txtPesquisaResidencia" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
               </Group>
-              <EmptySpace min="-2" pref="23" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="33" max="-2" attributes="0"/>
               <Component id="jScrollPane1" min="-2" pref="129" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -109,7 +111,7 @@
                   <Component id="btnSalvaResidencia" alignment="3" min="-2" pref="37" max="-2" attributes="0"/>
                   <Component id="btnSalvaResidencia1" alignment="3" min="-2" pref="37" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="109" max="32767" attributes="0"/>
+              <EmptySpace pref="861" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -119,7 +121,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
-        <Property name="text" type="java.lang.String" value="(icone lupa)"/>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/br/com/sistemaCondominio/icones/lupa.png"/>
+        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel2">
