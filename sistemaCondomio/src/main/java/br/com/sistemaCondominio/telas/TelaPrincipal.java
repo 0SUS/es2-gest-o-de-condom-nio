@@ -4,6 +4,9 @@
  */
 package br.com.sistemaCondominio.telas;
 
+import java.text.DateFormat;
+import java.util.Date;
+
 /**
  *
  * @author laris
@@ -28,21 +31,155 @@ public class TelaPrincipal extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        Desktop = new javax.swing.JDesktopPane();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        lblUsuario = new javax.swing.JLabel();
+        lbldata = new javax.swing.JLabel();
+        menu = new javax.swing.JMenuBar();
+        menuMoradores = new javax.swing.JMenu();
+        cadastraCliente = new javax.swing.JMenuItem();
+        editarMoradores = new javax.swing.JMenuItem();
+        menuResidencias = new javax.swing.JMenu();
+        cadastrarResidencia = new javax.swing.JMenuItem();
+        editarResidencia = new javax.swing.JMenuItem();
+        menuReserva = new javax.swing.JMenu();
+        menuTaxas = new javax.swing.JMenu();
+        menumanutencao = new javax.swing.JMenu();
+        menurelatorio = new javax.swing.JMenu();
+        menuComunicacao = new javax.swing.JMenu();
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Gerenciamento de condominio");
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowActivated(java.awt.event.WindowEvent evt) {
+                formWindowActivated(evt);
+            }
+        });
+
+        javax.swing.GroupLayout DesktopLayout = new javax.swing.GroupLayout(Desktop);
+        Desktop.setLayout(DesktopLayout);
+        DesktopLayout.setHorizontalGroup(
+            DesktopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 910, Short.MAX_VALUE)
+        );
+        DesktopLayout.setVerticalGroup(
+            DesktopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 540, Short.MAX_VALUE)
+        );
+
+        jLabel1.setText("jLabel1");
+
+        jLabel2.setText("jLabel2");
+
+        lblUsuario.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        lblUsuario.setText("Usuario");
+
+        lbldata.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        lbldata.setText("data");
+
+        menuMoradores.setText("Moradores");
+
+        cadastraCliente.setText("Cadastrar");
+        menuMoradores.add(cadastraCliente);
+
+        editarMoradores.setText("Editar/Excluir");
+        editarMoradores.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editarMoradoresActionPerformed(evt);
+            }
+        });
+        menuMoradores.add(editarMoradores);
+
+        menu.add(menuMoradores);
+
+        menuResidencias.setText("Residências");
+
+        cadastrarResidencia.setText("Cadastrar");
+        menuResidencias.add(cadastrarResidencia);
+
+        editarResidencia.setText("Editar/Excluir");
+        menuResidencias.add(editarResidencia);
+
+        menu.add(menuResidencias);
+
+        menuReserva.setText("Reserva de áreas");
+        menu.add(menuReserva);
+
+        menuTaxas.setText("Taxas");
+        menu.add(menuTaxas);
+
+        menumanutencao.setText("Manutenções");
+        menu.add(menumanutencao);
+
+        menurelatorio.setText("Relatórios");
+        menu.add(menurelatorio);
+
+        menuComunicacao.setText("Comunicações");
+        menu.add(menuComunicacao);
+
+        setJMenuBar(menu);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(Desktop, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(69, 69, 69)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lbldata, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(85, Short.MAX_VALUE))
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addGap(0, 0, Short.MAX_VALUE)
+                    .addComponent(jLabel1)
+                    .addGap(0, 0, Short.MAX_VALUE)))
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addGap(0, 0, Short.MAX_VALUE)
+                    .addComponent(jLabel2)
+                    .addGap(0, 0, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(Desktop)
+                .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addGap(132, 132, 132)
+                .addComponent(lblUsuario)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lbldata)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addGap(0, 0, Short.MAX_VALUE)
+                    .addComponent(jLabel1)
+                    .addGap(0, 0, Short.MAX_VALUE)))
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addGap(0, 0, Short.MAX_VALUE)
+                    .addComponent(jLabel2)
+                    .addGap(0, 0, Short.MAX_VALUE)))
         );
 
-        pack();
+        setSize(new java.awt.Dimension(1173, 569));
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void editarMoradoresActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editarMoradoresActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_editarMoradoresActionPerformed
+
+    private void formWindowActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowActivated
+        // mostra data atual do sistema ao inicializar a tela
+        Date data = new Date();
+        DateFormat formatador = DateFormat.getDateInstance(DateFormat.SHORT);
+        lbldata.setText(formatador.format(data));
+    }//GEN-LAST:event_formWindowActivated
 
     /**
      * @param args the command line arguments
@@ -70,5 +207,22 @@ public class TelaPrincipal extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JDesktopPane Desktop;
+    private javax.swing.JMenuItem cadastraCliente;
+    private javax.swing.JMenuItem cadastrarResidencia;
+    private javax.swing.JMenuItem editarMoradores;
+    private javax.swing.JMenuItem editarResidencia;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel lblUsuario;
+    private javax.swing.JLabel lbldata;
+    private javax.swing.JMenuBar menu;
+    private javax.swing.JMenu menuComunicacao;
+    private javax.swing.JMenu menuMoradores;
+    private javax.swing.JMenu menuReserva;
+    private javax.swing.JMenu menuResidencias;
+    private javax.swing.JMenu menuTaxas;
+    private javax.swing.JMenu menumanutencao;
+    private javax.swing.JMenu menurelatorio;
     // End of variables declaration//GEN-END:variables
 }
