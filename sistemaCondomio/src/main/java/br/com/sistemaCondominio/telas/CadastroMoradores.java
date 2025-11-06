@@ -44,7 +44,7 @@ public class CadastroMoradores extends javax.swing.JInternalFrame {
         btnSalvaResidencia = new javax.swing.JButton();
 
         setTitle("CadastroMoradores");
-        setPreferredSize(new java.awt.Dimension(1440, 1420));
+        setPreferredSize(new java.awt.Dimension(910, 540));
 
         jLabel1.setText("*Nome");
 
@@ -90,7 +90,7 @@ public class CadastroMoradores extends javax.swing.JInternalFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addComponent(txtTelefoneMorador, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
                             .addComponent(txtCpfMorador, javax.swing.GroupLayout.Alignment.LEADING))
-                        .addContainerGap(614, Short.MAX_VALUE))
+                        .addContainerGap(486, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addComponent(txtNomeMorador, javax.swing.GroupLayout.Alignment.LEADING)
@@ -111,7 +111,7 @@ public class CadastroMoradores extends javax.swing.JInternalFrame {
                                         .addGap(27, 27, 27)
                                         .addComponent(txtPlacaVeiculo, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE))))
                             .addComponent(btnSalvaResidencia, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 226, Short.MAX_VALUE))))
+                        .addGap(0, 98, Short.MAX_VALUE))))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jLabel7)
@@ -151,7 +151,7 @@ public class CadastroMoradores extends javax.swing.JInternalFrame {
                             .addComponent(txtPlacaVeiculo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addGap(50, 50, 50)
                 .addComponent(btnSalvaResidencia, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(255, Short.MAX_VALUE))
+                .addContainerGap(123, Short.MAX_VALUE))
         );
 
         pack();

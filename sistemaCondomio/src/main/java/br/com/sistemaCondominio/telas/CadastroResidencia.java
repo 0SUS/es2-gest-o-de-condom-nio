@@ -40,7 +40,7 @@ public class CadastroResidencia extends javax.swing.JInternalFrame {
         txtRuaResidencia = new javax.swing.JTextField();
 
         setTitle("CadastroResidencia");
-        setPreferredSize(new java.awt.Dimension(1440, 1420));
+        setPreferredSize(new java.awt.Dimension(910, 540));
 
         jLabel1.setText("*Campo Obrigatório");
 
@@ -87,7 +87,7 @@ public class CadastroResidencia extends javax.swing.JInternalFrame {
                             .addComponent(txtTelefoneResidencia, javax.swing.GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
                             .addComponent(txtRuaResidencia)
                             .addComponent(txtNumeroResidencia))))
-                .addContainerGap(487, Short.MAX_VALUE))
+                .addContainerGap(256, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
                 .addComponent(jLabel1)
@@ -120,7 +120,7 @@ public class CadastroResidencia extends javax.swing.JInternalFrame {
                     .addComponent(txtTelefoneResidencia, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(67, 67, 67)
                 .addComponent(btnSalvaResidencia, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(136, Short.MAX_VALUE))
+                .addContainerGap(139, Short.MAX_VALUE))
         );
 
         pack();
