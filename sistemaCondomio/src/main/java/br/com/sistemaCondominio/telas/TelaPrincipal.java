@@ -104,12 +104,32 @@ public class TelaPrincipal extends javax.swing.JFrame {
         menu.add(menuResidencias);
 
         menuReserva.setText("Reserva de áreas");
+
+        reservarArea = new javax.swing.JMenuItem();
+        reservarArea.setText("Reservar");
+        reservarArea.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                reservarAreaActionPerformed(evt);
+            }
+        });
+        menuReserva.add(reservarArea);
+
         menu.add(menuReserva);
 
         menuTaxas.setText("Taxas");
         menu.add(menuTaxas);
 
         menumanutencao.setText("Manutenções");
+
+        gerenciarManutencoes = new javax.swing.JMenuItem();
+        gerenciarManutencoes.setText("Gerenciar Manutenções");
+        gerenciarManutencoes.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                gerenciarManutencoesActionPerformed(evt);
+            }
+        });
+        menumanutencao.add(gerenciarManutencoes);
+
         menu.add(menumanutencao);
 
         menurelatorio.setText("Relatórios");
@@ -181,6 +201,29 @@ public class TelaPrincipal extends javax.swing.JFrame {
         lbldata.setText(formatador.format(data));
     }//GEN-LAST:event_formWindowActivated
 
+    private void reservarAreaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservarAreaActionPerformed
+        // TODO add your handling code here:
+        ReservasAreasComuns reservas = new ReservasAreasComuns();
+        Desktop.add(reservas);
+        reservas.setVisible(true);
+        try {
+            reservas.setMaximum(true);
+        } catch (java.beans.PropertyVetoException e) {
+            logger.log(java.util.logging.Level.WARNING, "Não foi possível maximizar a tela de reservas", e);
+        }
+    }//GEN-LAST:event_reservarAreaActionPerformed
+
+    private void gerenciarManutencoesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gerenciarManutencoesActionPerformed
+        ManutencoesAreasComuns manutencoes = new ManutencoesAreasComuns();
+        Desktop.add(manutencoes);
+        manutencoes.setVisible(true);
+        try {
+            manutencoes.setMaximum(true);
+        } catch (java.beans.PropertyVetoException e) {
+            logger.log(java.util.logging.Level.WARNING, "Não foi possível maximizar a tela de manutenções", e);
+        }
+    }//GEN-LAST:event_gerenciarManutencoesActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -224,5 +267,7 @@ public class TelaPrincipal extends javax.swing.JFrame {
     private javax.swing.JMenu menuTaxas;
     private javax.swing.JMenu menumanutencao;
     private javax.swing.JMenu menurelatorio;
+    private javax.swing.JMenuItem reservarArea;
+    private javax.swing.JMenuItem gerenciarManutencoes;
     // End of variables declaration//GEN-END:variables
 }
