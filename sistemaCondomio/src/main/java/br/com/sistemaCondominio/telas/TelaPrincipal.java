@@ -133,7 +133,31 @@ public class TelaPrincipal extends javax.swing.JFrame {
         menu.add(menumanutencao);
 
         menurelatorio.setText("Relatórios");
+
+        gerarRelatorio = new javax.swing.JMenuItem();
+        gerarRelatorio.setText("Gerar Relatório");
+        gerarRelatorio.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                gerarRelatorioActionPerformed(evt);
+            }
+        });
+        menurelatorio.add(gerarRelatorio);
+
         menu.add(menurelatorio);
+
+        menuAcesso = new javax.swing.JMenu();
+        menuAcesso.setText("Acesso");
+
+        controleAcesso = new javax.swing.JMenuItem();
+        controleAcesso.setText("Controle de Acesso");
+        controleAcesso.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                controleAcessoActionPerformed(evt);
+            }
+        });
+        menuAcesso.add(controleAcesso);
+
+        menu.add(menuAcesso);
 
         menuComunicacao.setText("Comunicações");
         menu.add(menuComunicacao);
@@ -224,6 +248,23 @@ public class TelaPrincipal extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_gerenciarManutencoesActionPerformed
 
+    private void gerarRelatorioActionPerformed(java.awt.event.ActionEvent evt) {
+        TelaRelatorios relatorios = new TelaRelatorios();
+        Desktop.add(relatorios);
+        relatorios.setVisible(true);
+        try {
+            relatorios.setMaximum(true);
+        } catch (java.beans.PropertyVetoException e) {
+            logger.log(java.util.logging.Level.WARNING, "Não foi possível maximizar a tela de relatórios", e);
+        }
+    }
+
+    private void controleAcessoActionPerformed(java.awt.event.ActionEvent evt) {
+        TelaControleAcesso acesso = new TelaControleAcesso();
+        Desktop.add(acesso);
+        acesso.setVisible(true);
+    }
+
     /**
      * @param args the command line arguments
      */
@@ -255,11 +296,14 @@ public class TelaPrincipal extends javax.swing.JFrame {
     private javax.swing.JMenuItem cadastrarResidencia;
     private javax.swing.JMenuItem editarMoradores;
     private javax.swing.JMenuItem editarResidencia;
+    private javax.swing.JMenuItem gerarRelatorio;
+    private javax.swing.JMenuItem controleAcesso;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel lblUsuario;
     private javax.swing.JLabel lbldata;
     private javax.swing.JMenuBar menu;
+    private javax.swing.JMenu menuAcesso;
     private javax.swing.JMenu menuComunicacao;
     private javax.swing.JMenu menuMoradores;
     private javax.swing.JMenu menuReserva;
