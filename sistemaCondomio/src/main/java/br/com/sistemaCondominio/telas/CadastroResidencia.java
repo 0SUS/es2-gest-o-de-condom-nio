@@ -39,7 +39,10 @@ public class CadastroResidencia extends javax.swing.JInternalFrame {
         jLabel6 = new javax.swing.JLabel();
         txtRuaResidencia = new javax.swing.JTextField();
 
-        setTitle("CadastroResidencia");
+        setClosable(true);
+        setIconifiable(true);
+        setMaximizable(true);
+        setTitle("Cadastro de Residencia");
         setPreferredSize(new java.awt.Dimension(910, 540));
 
         jLabel1.setText("*Campo Obrigatório");
@@ -123,7 +126,7 @@ public class CadastroResidencia extends javax.swing.JInternalFrame {
                 .addContainerGap(139, Short.MAX_VALUE))
         );
 
-        pack();
+        setBounds(0, 0, 910, 540);
     }// </editor-fold>//GEN-END:initComponents
 
     private void txtNumeroResidenciaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNumeroResidenciaActionPerformed

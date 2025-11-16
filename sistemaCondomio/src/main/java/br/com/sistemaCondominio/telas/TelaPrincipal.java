@@ -6,6 +6,7 @@ package br.com.sistemaCondominio.telas;
 
 import java.text.DateFormat;
 import java.util.Date;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -84,6 +85,11 @@ public class TelaPrincipal extends javax.swing.JFrame {
         menuMoradores.setText("Moradores");
 
         cadastraCliente.setText("Cadastrar");
+        cadastraCliente.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cadastraClienteActionPerformed(evt);
+            }
+        });
         menuMoradores.add(cadastraCliente);
 
         editarMoradores.setText("Editar/Excluir");
@@ -99,9 +105,19 @@ public class TelaPrincipal extends javax.swing.JFrame {
         menuResidencias.setText("Residências");
 
         cadastrarResidencia.setText("Cadastrar");
+        cadastrarResidencia.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cadastrarResidenciaActionPerformed(evt);
+            }
+        });
         menuResidencias.add(cadastrarResidencia);
 
         editarResidencia.setText("Editar/Excluir");
+        editarResidencia.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editarResidenciaActionPerformed(evt);
+            }
+        });
         menuResidencias.add(editarResidencia);
 
         menu.add(menuResidencias);
@@ -201,7 +217,17 @@ public class TelaPrincipal extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void editarMoradoresActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editarMoradoresActionPerformed
-        // TODO add your handling code here:
+         // abre tela editarExcluirMoradores
+          try {
+            EditarExcluirMoradores telaedicao = new EditarExcluirMoradores();
+            Desktop.add(telaedicao);
+            telaedicao.setVisible(true);
+            
+          } 
+          catch (Exception e) {
+            logger.log(java.util.logging.Level.WARNING, "Não foi possível maximizar a tela de editar moradores", e);
+        }
+          
     }//GEN-LAST:event_editarMoradoresActionPerformed
 
     private void formWindowActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowActivated
@@ -256,6 +282,35 @@ public class TelaPrincipal extends javax.swing.JFrame {
         logger.log(java.util.logging.Level.WARNING, "Não foi possível maximizar a tela de comunicações", e);
     }
     }//GEN-LAST:event_MensagensActionPerformed
+
+    private void cadastraClienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cadastraClienteActionPerformed
+          // abre tela CadastroMoradores
+          CadastroMoradores moradores = new CadastroMoradores();
+          Desktop.add(moradores);
+          moradores.setVisible(true);
+
+          
+    }//GEN-LAST:event_cadastraClienteActionPerformed
+
+    private void cadastrarResidenciaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cadastrarResidenciaActionPerformed
+        // abre tela para cadastro de residencia:
+            CadastroResidencia residencia = new CadastroResidencia();
+            Desktop.add(residencia);
+            residencia.setVisible(true);
+           
+    }//GEN-LAST:event_cadastrarResidenciaActionPerformed
+
+    private void editarResidenciaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editarResidenciaActionPerformed
+        // abre tela para edição de residencia:
+        try {
+        EditarExcluirResidencia telaEditar = new EditarExcluirResidencia();
+        Desktop.add(telaEditar);
+        telaEditar.setVisible(true);
+       // telaEditar.toFront(); // Traz para frente
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, "Erro ao abrir tela: " + e.getMessage());
+    }
+    }//GEN-LAST:event_editarResidenciaActionPerformed
 
   
 

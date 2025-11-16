@@ -13,6 +13,9 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="Cadastrar"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cadastraClienteActionPerformed"/>
+              </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="editarMoradores">
               <Properties>
@@ -33,11 +36,17 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="Cadastrar"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cadastrarResidenciaActionPerformed"/>
+              </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="editarResidencia">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Editar/Excluir"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editarResidenciaActionPerformed"/>
+              </Events>
             </MenuItem>
           </SubComponents>
         </Menu>

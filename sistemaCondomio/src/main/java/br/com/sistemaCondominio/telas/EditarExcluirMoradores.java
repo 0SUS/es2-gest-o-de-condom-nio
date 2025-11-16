@@ -54,6 +54,9 @@ public class EditarExcluirMoradores extends javax.swing.JInternalFrame {
         txtSenha = new javax.swing.JPasswordField();
         jLabel13 = new javax.swing.JLabel();
 
+        setClosable(true);
+        setIconifiable(true);
+        setMaximizable(true);
         setTitle("Editar/Excluir moradores");
         setPreferredSize(new java.awt.Dimension(910, 540));
 
@@ -109,7 +112,7 @@ public class EditarExcluirMoradores extends javax.swing.JInternalFrame {
             }
         });
 
-        jLabel7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/sistemaCondominio/icones/lupa.png"))); // NOI18N
+        jLabel7.setText("🔍 Buscar");
 
         cbbPerfil.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { " ", "Administrador", "Morador" }));
 
@@ -145,9 +148,9 @@ public class EditarExcluirMoradores extends javax.swing.JInternalFrame {
                                 .addComponent(txtPlacaVeiculo, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(txtPesquisaMoradores, javax.swing.GroupLayout.PREFERRED_SIZE, 553, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jLabel7)
-                                .addGap(56, 56, 56)
+                                .addGap(68, 68, 68)
                                 .addComponent(jLabel2))
                             .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 794, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createSequentialGroup()
@@ -185,7 +188,7 @@ public class EditarExcluirMoradores extends javax.swing.JInternalFrame {
                                         .addGap(18, 18, 18)
                                         .addComponent(txtSenha, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addComponent(cbbPerfil, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                        .addGap(0, 92, Short.MAX_VALUE))
+                        .addGap(0, 54, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(btnSalvaResidencia1)
@@ -198,8 +201,9 @@ public class EditarExcluirMoradores extends javax.swing.JInternalFrame {
             .addGroup(layout.createSequentialGroup()
                 .addGap(16, 16, 16)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtPesquisaMoradores, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(txtPesquisaMoradores, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addGap(23, 23, 23)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -250,7 +254,7 @@ public class EditarExcluirMoradores extends javax.swing.JInternalFrame {
                 .addGap(68, 68, 68))
         );
 
-        pack();
+        setBounds(0, 0, 910, 558);
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnSalvaResidenciaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalvaResidenciaActionPerformed
