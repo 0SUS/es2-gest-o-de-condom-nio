@@ -52,6 +52,8 @@ public class TelaPrincipal extends javax.swing.JFrame {
         menurelatorio = new javax.swing.JMenu();
         menuComunicacao = new javax.swing.JMenu();
         Mensagens = new javax.swing.JMenuItem();
+        maisMenu = new javax.swing.JMenu();
+        menuSair = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Gerenciamento de condominio");
@@ -164,6 +166,18 @@ public class TelaPrincipal extends javax.swing.JFrame {
 
         menu.add(menuComunicacao);
 
+        maisMenu.setText("Mais");
+
+        menuSair.setText("Sair");
+        menuSair.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuSairActionPerformed(evt);
+            }
+        });
+        maisMenu.add(menuSair);
+
+        menu.add(maisMenu);
+
         setJMenuBar(menu);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -173,11 +187,13 @@ public class TelaPrincipal extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(Desktop, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(69, 69, 69)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lbldata, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(85, Short.MAX_VALUE))
+                    .addComponent(lblUsuario, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(lbldata, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 14, Short.MAX_VALUE)))
+                .addContainerGap())
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addGap(0, 0, Short.MAX_VALUE)
@@ -197,9 +213,9 @@ public class TelaPrincipal extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addGap(132, 132, 132)
                 .addComponent(lblUsuario)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(lbldata)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(344, Short.MAX_VALUE))
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addGap(0, 0, Short.MAX_VALUE)
@@ -312,6 +328,15 @@ public class TelaPrincipal extends javax.swing.JFrame {
     }
     }//GEN-LAST:event_editarResidenciaActionPerformed
 
+    private void menuSairActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuSairActionPerformed
+        // exibe uma caixa de dialogo
+        int sair = JOptionPane.showConfirmDialog(null, "Tem certeza que deseja sair?","Atenção",JOptionPane.YES_NO_OPTION);
+        if (sair == JOptionPane.YES_OPTION){
+        System.exit(0); // encerra o sistema
+        }
+        
+    }//GEN-LAST:event_menuSairActionPerformed
+
   
 
 
@@ -353,11 +378,13 @@ public class TelaPrincipal extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel lblUsuario;
     private javax.swing.JLabel lbldata;
+    private javax.swing.JMenu maisMenu;
     private javax.swing.JMenuBar menu;
     private javax.swing.JMenu menuComunicacao;
     private javax.swing.JMenu menuMoradores;
     private javax.swing.JMenu menuReserva;
     private javax.swing.JMenu menuResidencias;
+    private javax.swing.JMenuItem menuSair;
     private javax.swing.JMenu menuTaxas;
     private javax.swing.JMenu menumanutencao;
     private javax.swing.JMenu menurelatorio;
