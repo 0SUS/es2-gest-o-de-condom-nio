@@ -8,9 +8,9 @@ import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.sql.*;
+import br.com.sistemaCondominio.dal.ModuloConexao;
+import br.com.sistemaCondominio.dal.UsuarioLogado;
 import java.util.Locale;
 
 /**
@@ -19,34 +19,7 @@ import java.util.Locale;
  */
 public class ManutencoesAreasComuns extends javax.swing.JInternalFrame {
 
-    // Modelo de dados para manutenções (em memória)
-    private class Manutencao {
-        int id;
-        String area;
-        String tipoProblema;
-        String descricao;
-        double custoEstimado;
-        double custoFinal;
-        String status;
-        Date dataCriacao;
-        Date dataAtualizacao;
-
-        public Manutencao(int id, String area, String tipoProblema, String descricao, 
-                         double custoEstimado, String status) {
-            this.id = id;
-            this.area = area;
-            this.tipoProblema = tipoProblema;
-            this.descricao = descricao;
-            this.custoEstimado = custoEstimado;
-            this.custoFinal = 0.0;
-            this.status = status;
-            this.dataCriacao = new Date();
-            this.dataAtualizacao = new Date();
-        }
-    }
-
-    private List<Manutencao> manutencoes;
-    private int proximoId = 1;
+    private Connection conexao = null;
     private DefaultTableModel tableModel;
     private NumberFormat currencyFormat;
 
@@ -55,10 +28,11 @@ public class ManutencoesAreasComuns extends javax.swing.JInternalFrame {
      */
     public ManutencoesAreasComuns() {
         initComponents();
-        manutencoes = new ArrayList<>();
+        conexao = ModuloConexao.conector();
         currencyFormat = NumberFormat.getCurrencyInstance(Locale.of("pt", "BR"));
         setupTable();
         populateComponents();
+        atualizarTabela();
         setClosable(true);
         setIconifiable(true);
         setMaximizable(true);
@@ -96,40 +70,79 @@ public class ManutencoesAreasComuns extends javax.swing.JInternalFrame {
         jComboBoxStatus.addItem("Aberto");
         jComboBoxStatus.addItem("Em andamento");
         jComboBoxStatus.addItem("Concluído");
-
-        atualizarTabela();
     }
 
     private void atualizarTabela() {
-        tableModel.setRowCount(0);
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        String sql = "SELECT id, area, tipo_problema, descricao, custo_estimado, " +
+                     "custo_final, status, data_criacao " +
+                     "FROM manutencoes_areas_comuns " +
+                     "ORDER BY data_criacao DESC";
         
-        for (Manutencao m : manutencoes) {
-            Object[] row = {
-                m.id,
-                m.area,
-                m.tipoProblema,
-                m.descricao.length() > 30 ? m.descricao.substring(0, 30) + "..." : m.descricao,
-                currencyFormat.format(m.custoEstimado),
-                m.custoFinal > 0 ? currencyFormat.format(m.custoFinal) : "-",
-                m.status,
-                dateFormat.format(m.dataCriacao)
-            };
-            tableModel.addRow(row);
+        try {
+            PreparedStatement pst = conexao.prepareStatement(sql);
+            ResultSet rs = pst.executeQuery();
+            
+            tableModel.setRowCount(0);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+            
+            while (rs.next()) {
+                String descricao = rs.getString("descricao");
+                String descricaoResumida = descricao.length() > 30 ? 
+                    descricao.substring(0, 30) + "..." : descricao;
+                
+                double custoFinal = rs.getDouble("custo_final");
+                
+                Object[] row = {
+                    rs.getInt("id"),
+                    rs.getString("area"),
+                    rs.getString("tipo_problema"),
+                    descricaoResumida,
+                    currencyFormat.format(rs.getDouble("custo_estimado")),
+                    custoFinal > 0 ? currencyFormat.format(custoFinal) : "-",
+                    rs.getString("status"),
+                    dateFormat.format(rs.getTimestamp("data_criacao"))
+                };
+                tableModel.addRow(row);
+            }
+            
+            rs.close();
+            pst.close();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao carregar manutenções: " + e.getMessage());
         }
     }
 
     private boolean areaEmManutencao(String area) {
-        for (Manutencao m : manutencoes) {
-            if (m.area.equals(area) && 
-                (m.status.equals("Aberto") || m.status.equals("Em andamento"))) {
+        String sql = "SELECT COUNT(*) FROM manutencoes_areas_comuns " +
+                     "WHERE area = ? AND status IN ('Aberto', 'Em andamento')";
+        
+        try {
+            PreparedStatement pst = conexao.prepareStatement(sql);
+            pst.setString(1, area);
+            ResultSet rs = pst.executeQuery();
+            
+            if (rs.next() && rs.getInt(1) > 0) {
+                rs.close();
+                pst.close();
                 return true;
             }
+            
+            rs.close();
+            pst.close();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao verificar manutenções: " + e.getMessage());
         }
+        
         return false;
     }
 
     private void novaManutencaoActionPerformed(java.awt.event.ActionEvent evt) {
+        // Verifica se há usuário logado
+        if (!UsuarioLogado.getInstance().isLogado()) {
+            JOptionPane.showMessageDialog(this, "Erro: Usuário não está logado. Faça login novamente.");
+            return;
+        }
+
         String area = (String) jComboBoxArea.getSelectedItem();
         String tipoProblema = (String) jComboBoxTipoProblema.getSelectedItem();
         String descricao = jTextAreaDescricao.getText().trim();
@@ -164,21 +177,42 @@ public class ManutencoesAreasComuns extends javax.swing.JInternalFrame {
             String custoText = jTextFieldCustoEstimado.getText().trim().replace(",", ".");
             if (!custoText.isEmpty()) {
                 custoEstimado = Double.parseDouble(custoText);
+                if (custoEstimado < 0) {
+                    JOptionPane.showMessageDialog(this, "Custo estimado não pode ser negativo.");
+                    return;
+                }
             }
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Custo estimado inválido. Use apenas números.");
             return;
         }
 
-        // Cria nova manutenção
-        Manutencao novaManutencao = new Manutencao(proximoId++, area, tipoProblema, descricao, 
-                                                   custoEstimado, "Aberto");
-        manutencoes.add(novaManutencao);
+        // Insere nova manutenção no banco
+        String sql = "INSERT INTO manutencoes_areas_comuns " +
+                     "(area, tipo_problema, descricao, custo_estimado, status, usuario_criacao_id) " +
+                     "VALUES (?, ?, ?, ?, 'Aberto', ?)";
         
-        atualizarTabela();
-        limparFormulario();
-        
-        JOptionPane.showMessageDialog(this, "Manutenção cadastrada com sucesso!");
+        try {
+            PreparedStatement pst = conexao.prepareStatement(sql);
+            pst.setString(1, area);
+            pst.setString(2, tipoProblema);
+            pst.setString(3, descricao);
+            pst.setDouble(4, custoEstimado);
+            pst.setInt(5, UsuarioLogado.getInstance().getId());
+            
+            int resultado = pst.executeUpdate();
+            pst.close();
+            
+            if (resultado > 0) {
+                JOptionPane.showMessageDialog(this, "Manutenção cadastrada com sucesso!");
+                atualizarTabela();
+                limparFormulario();
+            } else {
+                JOptionPane.showMessageDialog(this, "Erro ao cadastrar manutenção. Tente novamente.");
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao cadastrar manutenção: " + e.getMessage());
+        }
     }
 
     private void atualizarStatusActionPerformed(java.awt.event.ActionEvent evt) {
@@ -190,13 +224,6 @@ public class ManutencoesAreasComuns extends javax.swing.JInternalFrame {
         }
 
         int id = (Integer) tableModel.getValueAt(selectedRow, 0);
-        Manutencao manutencao = buscarManutencaoPorId(id);
-        
-        if (manutencao == null) {
-            JOptionPane.showMessageDialog(this, "Manutenção não encontrada.");
-            return;
-        }
-
         String novoStatus = (String) jComboBoxStatus.getSelectedItem();
         double novoCustoFinal = 0.0;
         
@@ -204,31 +231,40 @@ public class ManutencoesAreasComuns extends javax.swing.JInternalFrame {
             String custoText = jTextFieldCustoFinal.getText().trim().replace(",", ".");
             if (!custoText.isEmpty()) {
                 novoCustoFinal = Double.parseDouble(custoText);
+                if (novoCustoFinal < 0) {
+                    JOptionPane.showMessageDialog(this, "Custo final não pode ser negativo.");
+                    return;
+                }
             }
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Custo final inválido. Use apenas números.");
             return;
         }
 
-        manutencao.status = novoStatus;
-        if (novoCustoFinal > 0) {
-            manutencao.custoFinal = novoCustoFinal;
-        }
-        manutencao.dataAtualizacao = new Date();
-
-        atualizarTabela();
-        limparFormulario();
+        // Atualiza no banco de dados
+        String sql = "UPDATE manutencoes_areas_comuns " +
+                     "SET status = ?, custo_final = ? " +
+                     "WHERE id = ?";
         
-        JOptionPane.showMessageDialog(this, "Status atualizado com sucesso!");
-    }
-
-    private Manutencao buscarManutencaoPorId(int id) {
-        for (Manutencao m : manutencoes) {
-            if (m.id == id) {
-                return m;
+        try {
+            PreparedStatement pst = conexao.prepareStatement(sql);
+            pst.setString(1, novoStatus);
+            pst.setDouble(2, novoCustoFinal);
+            pst.setInt(3, id);
+            
+            int resultado = pst.executeUpdate();
+            pst.close();
+            
+            if (resultado > 0) {
+                JOptionPane.showMessageDialog(this, "Status atualizado com sucesso!");
+                atualizarTabela();
+                limparFormulario();
+            } else {
+                JOptionPane.showMessageDialog(this, "Erro ao atualizar status. Manutenção não encontrada.");
             }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao atualizar status: " + e.getMessage());
         }
-        return null;
     }
 
     private void limparFormulario() {
@@ -242,50 +278,77 @@ public class ManutencoesAreasComuns extends javax.swing.JInternalFrame {
     }
 
     private void gerarRelatorioActionPerformed(java.awt.event.ActionEvent evt) {
-        if (manutencoes.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Não há manutenções cadastradas para gerar relatório.");
-            return;
-        }
-
-        StringBuilder relatorio = new StringBuilder();
-        relatorio.append("=== RELATÓRIO DE MANUTENÇÕES ===\n\n");
+        String sql = "SELECT id, area, tipo_problema, descricao, custo_estimado, " +
+                     "custo_final, status, data_criacao, data_atualizacao " +
+                     "FROM manutencoes_areas_comuns " +
+                     "ORDER BY data_criacao DESC";
         
-        int totalAberto = 0, totalEmAndamento = 0, totalConcluido = 0;
-        double totalCustoEstimado = 0.0, totalCustoFinal = 0.0;
-        
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-        
-        for (Manutencao m : manutencoes) {
-            relatorio.append(String.format("ID: %d\n", m.id));
-            relatorio.append(String.format("Área: %s\n", m.area));
-            relatorio.append(String.format("Tipo: %s\n", m.tipoProblema));
-            relatorio.append(String.format("Descrição: %s\n", m.descricao));
-            relatorio.append(String.format("Custo Estimado: %s\n", currencyFormat.format(m.custoEstimado)));
-            relatorio.append(String.format("Custo Final: %s\n", 
-                m.custoFinal > 0 ? currencyFormat.format(m.custoFinal) : "Não informado"));
-            relatorio.append(String.format("Status: %s\n", m.status));
-            relatorio.append(String.format("Data Criação: %s\n", dateFormat.format(m.dataCriacao)));
-            relatorio.append(String.format("Última Atualização: %s\n", dateFormat.format(m.dataAtualizacao)));
-            relatorio.append("----------------------------------------\n");
+        try {
+            PreparedStatement pst = conexao.prepareStatement(sql);
+            ResultSet rs = pst.executeQuery();
             
-            if (m.status.equals("Aberto")) totalAberto++;
-            else if (m.status.equals("Em andamento")) totalEmAndamento++;
-            else if (m.status.equals("Concluído")) totalConcluido++;
-            
-            totalCustoEstimado += m.custoEstimado;
-            totalCustoFinal += m.custoFinal;
-        }
-        
-        relatorio.append("\n=== RESUMO ===\n");
-        relatorio.append(String.format("Total de Manutenções: %d\n", manutencoes.size()));
-        relatorio.append(String.format("Abertas: %d\n", totalAberto));
-        relatorio.append(String.format("Em Andamento: %d\n", totalEmAndamento));
-        relatorio.append(String.format("Concluídas: %d\n", totalConcluido));
-        relatorio.append(String.format("Total Custo Estimado: %s\n", currencyFormat.format(totalCustoEstimado)));
-        relatorio.append(String.format("Total Custo Final: %s\n", currencyFormat.format(totalCustoFinal)));
+            if (!rs.isBeforeFirst()) {
+                JOptionPane.showMessageDialog(this, "Não há manutenções cadastradas para gerar relatório.");
+                rs.close();
+                pst.close();
+                return;
+            }
 
-        JOptionPane.showMessageDialog(this, relatorio.toString(), "Relatório de Manutenções", 
-                                     JOptionPane.INFORMATION_MESSAGE);
+            StringBuilder relatorio = new StringBuilder();
+            relatorio.append("=== RELATÓRIO DE MANUTENÇÕES ===\n\n");
+            
+            int totalAberto = 0, totalEmAndamento = 0, totalConcluido = 0;
+            double totalCustoEstimado = 0.0, totalCustoFinal = 0.0;
+            
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+            
+            while (rs.next()) {
+                relatorio.append(String.format("ID: %d\n", rs.getInt("id")));
+                relatorio.append(String.format("Área: %s\n", rs.getString("area")));
+                relatorio.append(String.format("Tipo: %s\n", rs.getString("tipo_problema")));
+                relatorio.append(String.format("Descrição: %s\n", rs.getString("descricao")));
+                relatorio.append(String.format("Custo Estimado: %s\n", 
+                    currencyFormat.format(rs.getDouble("custo_estimado"))));
+                
+                double custoFinal = rs.getDouble("custo_final");
+                relatorio.append(String.format("Custo Final: %s\n", 
+                    custoFinal > 0 ? currencyFormat.format(custoFinal) : "Não informado"));
+                
+                String status = rs.getString("status");
+                relatorio.append(String.format("Status: %s\n", status));
+                relatorio.append(String.format("Data Criação: %s\n", 
+                    dateFormat.format(rs.getTimestamp("data_criacao"))));
+                relatorio.append(String.format("Última Atualização: %s\n", 
+                    dateFormat.format(rs.getTimestamp("data_atualizacao"))));
+                relatorio.append("----------------------------------------\n");
+                
+                if (status.equals("Aberto")) totalAberto++;
+                else if (status.equals("Em andamento")) totalEmAndamento++;
+                else if (status.equals("Concluído")) totalConcluido++;
+                
+                totalCustoEstimado += rs.getDouble("custo_estimado");
+                totalCustoFinal += custoFinal;
+            }
+            
+            rs.close();
+            pst.close();
+            
+            relatorio.append("\n=== RESUMO ===\n");
+            relatorio.append(String.format("Total de Manutenções: %d\n", 
+                totalAberto + totalEmAndamento + totalConcluido));
+            relatorio.append(String.format("Abertas: %d\n", totalAberto));
+            relatorio.append(String.format("Em Andamento: %d\n", totalEmAndamento));
+            relatorio.append(String.format("Concluídas: %d\n", totalConcluido));
+            relatorio.append(String.format("Total Custo Estimado: %s\n", 
+                currencyFormat.format(totalCustoEstimado)));
+            relatorio.append(String.format("Total Custo Final: %s\n", 
+                currencyFormat.format(totalCustoFinal)));
+
+            JOptionPane.showMessageDialog(this, relatorio.toString(), "Relatório de Manutenções", 
+                                         JOptionPane.INFORMATION_MESSAGE);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao gerar relatório: " + e.getMessage());
+        }
     }
 
     /**
