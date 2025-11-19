@@ -149,6 +149,16 @@ public class TelaPrincipal extends javax.swing.JFrame {
         menu.add(menuTaxas);
 
         menumanutencao.setText("Manutenções");
+        
+        gerenciarManutencoes = new javax.swing.JMenuItem();
+        gerenciarManutencoes.setText("Gerenciar Manutenções");
+        gerenciarManutencoes.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                gerenciarManutencoesActionPerformed(evt);
+            }
+        });
+        menumanutencao.add(gerenciarManutencoes);
+        
         menu.add(menumanutencao);
 
         menurelatorio.setText("Relatórios");
@@ -371,6 +381,7 @@ public class TelaPrincipal extends javax.swing.JFrame {
     private javax.swing.JMenuItem GerenciarTaxas;
     private javax.swing.JMenuItem Mensagens;
     private javax.swing.JMenuItem cadastraCliente;
+    private javax.swing.JMenuItem gerenciarManutencoes;
     private javax.swing.JMenuItem cadastrarResidencia;
     private javax.swing.JMenuItem editarMoradores;
     private javax.swing.JMenuItem editarResidencia;

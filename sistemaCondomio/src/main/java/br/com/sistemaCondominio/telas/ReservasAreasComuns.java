@@ -8,6 +8,13 @@ import javax.swing.JOptionPane;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.table.DefaultTableModel;
+import java.sql.*;
+import br.com.sistemaCondominio.dal.ModuloConexao;
+import br.com.sistemaCondominio.dal.UsuarioLogado;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  *
@@ -15,12 +22,18 @@ import javax.swing.SpinnerNumberModel;
  */
 public class ReservasAreasComuns extends javax.swing.JInternalFrame {
 
+    private Connection conexao = null;
+    private DefaultTableModel tableModel;
+
     /**
      * Creates new form ReservasAreasComuns
      */
     public ReservasAreasComuns() {
         initComponents();
+        conexao = ModuloConexao.conector();
+        setupTable();
         populateDateAndTimeComponents();
+        carregarReservas();
         setClosable(true);
         setIconifiable(true);
         setMaximizable(true);
@@ -33,7 +46,57 @@ public class ReservasAreasComuns extends javax.swing.JInternalFrame {
         });
     }
 
+    private void setupTable() {
+        String[] colunas = {"ID", "Área", "Data", "Hora", "Usuário", "Observações"};
+        tableModel = new DefaultTableModel(colunas, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        jTableReservas.setModel(tableModel);
+    }
+
+    private void carregarReservas() {
+        String sql = "SELECT r.id, r.area, r.data_reserva, r.hora_reserva, " +
+                     "COALESCE(u.username, 'N/A') as usuario, r.observacoes " +
+                     "FROM reservas_areas_comuns r " +
+                     "LEFT JOIN usuario u ON r.usuario_id = u.id_usuario " +
+                     "ORDER BY r.data_reserva DESC, r.hora_reserva DESC";
+        
+        try {
+            PreparedStatement pst = conexao.prepareStatement(sql);
+            ResultSet rs = pst.executeQuery();
+            
+            tableModel.setRowCount(0);
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            
+            while (rs.next()) {
+                Object[] row = {
+                    rs.getInt("id"),
+                    rs.getString("area"),
+                    rs.getDate("data_reserva").toLocalDate().format(dateFormatter),
+                    rs.getTime("hora_reserva").toString().substring(0, 5), // HH:mm
+                    rs.getString("usuario"),
+                    rs.getString("observacoes") != null ? rs.getString("observacoes") : ""
+                };
+                tableModel.addRow(row);
+            }
+            
+            rs.close();
+            pst.close();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao carregar reservas: " + e.getMessage());
+        }
+    }
+
     private void jButtonReservarActionPerformed(java.awt.event.ActionEvent evt) {
+        // Verifica se há usuário logado
+        if (!UsuarioLogado.getInstance().isLogado()) {
+            JOptionPane.showMessageDialog(this, "Erro: Usuário não está logado. Faça login novamente.");
+            return;
+        }
+
         String selectedArea = (String) jComboBoxArea.getSelectedItem();
         String selectedDay = (String) jComboBoxDay.getSelectedItem();
         String selectedMonth = (String) jComboBoxMonth.getSelectedItem();
@@ -46,23 +109,83 @@ public class ReservasAreasComuns extends javax.swing.JInternalFrame {
             return;
         }
 
-        // Basic date validation (e.g., check for valid day for month)
-        // This can be more robust, but for now, a simple check.
+        // Validação de data
+        LocalDate dataReserva;
         try {
-            java.time.LocalDate.of(Integer.parseInt(selectedYear), Integer.parseInt(selectedMonth), Integer.parseInt(selectedDay));
+            dataReserva = LocalDate.of(Integer.parseInt(selectedYear), 
+                                      Integer.parseInt(selectedMonth), 
+                                      Integer.parseInt(selectedDay));
+            
+            // Verifica se a data não é no passado
+            if (dataReserva.isBefore(LocalDate.now())) {
+                JOptionPane.showMessageDialog(this, "Não é possível reservar para uma data no passado.");
+                return;
+            }
         } catch (java.time.DateTimeException e) {
             JOptionPane.showMessageDialog(this, "Data selecionada inválida. Por favor, verifique o dia, mês e ano.");
             return;
         }
 
-        String reservationDateTime = String.format("Área: %s, Data: %s/%s/%s, Hora: %02d:%02d",
-                selectedArea, selectedDay, selectedMonth, selectedYear, selectedHour, selectedMinute);
-
-        JOptionPane.showMessageDialog(this, "Reserva para: " + reservationDateTime + " (Funcionalidade de DB em desenvolvimento)");
-
-        // TODO: Implement database interaction for checking availability and saving reservation
-        // TODO: Implement notification to administrator
-        // TODO: Update jTableReservas with new reservation
+        // Validação de hora
+        LocalTime horaReserva = LocalTime.of(selectedHour, selectedMinute);
+        
+        // Verifica se já existe reserva para o mesmo horário e área
+        String sqlVerifica = "SELECT COUNT(*) FROM reservas_areas_comuns " +
+                            "WHERE area = ? AND data_reserva = ? AND hora_reserva = ?";
+        
+        try {
+            PreparedStatement pstVerifica = conexao.prepareStatement(sqlVerifica);
+            pstVerifica.setString(1, selectedArea);
+            pstVerifica.setDate(2, Date.valueOf(dataReserva));
+            pstVerifica.setTime(3, Time.valueOf(horaReserva));
+            
+            ResultSet rs = pstVerifica.executeQuery();
+            if (rs.next() && rs.getInt(1) > 0) {
+                JOptionPane.showMessageDialog(this, 
+                    "Já existe uma reserva para esta área no horário selecionado. Por favor, escolha outro horário.",
+                    "Reserva Indisponível", JOptionPane.WARNING_MESSAGE);
+                rs.close();
+                pstVerifica.close();
+                return;
+            }
+            rs.close();
+            pstVerifica.close();
+            
+            // Insere a nova reserva
+            String sqlInsert = "INSERT INTO reservas_areas_comuns " +
+                             "(area, data_reserva, hora_reserva, usuario_id, observacoes) " +
+                             "VALUES (?, ?, ?, ?, ?)";
+            
+            PreparedStatement pstInsert = conexao.prepareStatement(sqlInsert);
+            pstInsert.setString(1, selectedArea);
+            pstInsert.setDate(2, Date.valueOf(dataReserva));
+            pstInsert.setTime(3, Time.valueOf(horaReserva));
+            pstInsert.setInt(4, UsuarioLogado.getInstance().getId());
+            pstInsert.setString(5, ""); // Observações vazias por padrão
+            
+            int resultado = pstInsert.executeUpdate();
+            pstInsert.close();
+            
+            if (resultado > 0) {
+                JOptionPane.showMessageDialog(this, 
+                    "Reserva realizada com sucesso!\n" +
+                    "Área: " + selectedArea + "\n" +
+                    "Data: " + String.format("%02d/%02d/%s", 
+                        Integer.parseInt(selectedDay), 
+                        Integer.parseInt(selectedMonth), 
+                        selectedYear) + "\n" +
+                    "Hora: " + String.format("%02d:%02d", selectedHour, selectedMinute),
+                    "Reserva Confirmada", JOptionPane.INFORMATION_MESSAGE);
+                
+                // Recarrega a tabela
+                carregarReservas();
+            } else {
+                JOptionPane.showMessageDialog(this, "Erro ao realizar reserva. Tente novamente.");
+            }
+            
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao realizar reserva: " + e.getMessage());
+        }
     }
 
     private void populateDateAndTimeComponents() {

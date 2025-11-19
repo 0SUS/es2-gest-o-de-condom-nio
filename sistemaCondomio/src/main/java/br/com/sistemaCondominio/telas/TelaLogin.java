@@ -7,6 +7,7 @@ package br.com.sistemaCondominio.telas;
 import java.sql.*;
 import javax.swing.JOptionPane;
 import br.com.sistemaCondominio.dal.ModuloConexao;
+import br.com.sistemaCondominio.dal.UsuarioLogado;
 import java.awt.Color;
 /**
  *
@@ -19,17 +20,25 @@ public class TelaLogin extends javax.swing.JFrame {
     ResultSet rs = null;
 
     public void logar() {
-        String sql = "select * from usuario where username=? and senha=?";
+        String sql = "SELECT * FROM usuario WHERE username = ? AND senha = ?";
         try {
             // prepara consulta ao banco de dados
             pst = conexao.prepareStatement(sql);
-            pst.setString(1, txtUsuario.getText());
+            pst.setString(1, txtUsuario.getText().trim());
             String captura = new String(txtSenha.getPassword());
             pst.setString(2, captura);
             // executa query
             rs = pst.executeQuery();
             // verifica se usuario e senha estao correos
             if (rs.next()) {
+                // Salva informações do usuário logado
+                Integer usuarioId = rs.getInt("id_usuario");
+                String username = rs.getString("username");
+                // Usa o username como identificador
+                String perfil = "Morador"; // Valor padrão, pode ser ajustado se houver campo perfil
+                
+                UsuarioLogado.getInstance().setUsuario(usuarioId, username, perfil);
+                
                 TelaPrincipal principal = new TelaPrincipal();
                 principal.setVisible(true);
                 this.dispose(); // fecha tela de login ao abrir tela principal
