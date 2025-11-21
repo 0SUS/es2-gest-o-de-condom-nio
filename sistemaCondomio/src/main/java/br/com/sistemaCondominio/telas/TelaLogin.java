@@ -35,14 +35,27 @@ public class TelaLogin extends javax.swing.JFrame {
                 Integer usuarioId = rs.getInt("id_usuario");
                 String username = rs.getString("username");
                 // Usa o username como identificador
-                String perfil = "Morador"; // Valor padrão, pode ser ajustado se houver campo perfil
-                
-                UsuarioLogado.getInstance().setUsuario(usuarioId, username, perfil);
-                
-                TelaPrincipal principal = new TelaPrincipal();
-                principal.setVisible(true);
-                this.dispose(); // fecha tela de login ao abrir tela principal
-                conexao.close(); // fecha conexao com banco de dados
+               String perfil = rs.getString(11); // Valor padrão, pode ser ajustado se houver campo perfil
+               //System.out.println(perfil);
+               UsuarioLogado.getInstance().setUsuario(usuarioId, username, perfil);
+               // libera area de acesso de acordo com o perfil
+               if(perfil.equals("Administrador")){
+                    TelaPrincipal principal = new TelaPrincipal();
+                    principal.setVisible(true);
+                    TelaPrincipal.menuMoradores.setEnabled(true);
+                    TelaPrincipal.menuResidencias.setEnabled(true);
+                    TelaPrincipal.menuTaxas.setEnabled(true);
+                    TelaPrincipal.menurelatorio.setEnabled(true);
+                    TelaPrincipal.lblUsuario.setText(rs.getString(2));
+                    TelaPrincipal.lblUsuario.setForeground(Color.blue);
+                    this.dispose(); // fecha tela de login ao abrir tela principal
+               }else{
+                   TelaPrincipal principal = new TelaPrincipal();
+                    principal.setVisible(true);
+                    TelaPrincipal.lblUsuario.setText(rs.getString(2));
+                    this.dispose(); // fecha tela de login ao abrir tela principal
+                     //conexao.close(); // fecha conexao com banco de dados
+               }
             } else {
                 JOptionPane.showMessageDialog(null, "Usuário ou senha inválido");
             }
