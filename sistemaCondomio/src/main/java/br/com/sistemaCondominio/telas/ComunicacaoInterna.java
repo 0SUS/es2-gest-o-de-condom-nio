@@ -21,7 +21,7 @@ public class ComunicacaoInterna extends javax.swing.JInternalFrame {
     configurarPlaceholders();
     configurarTela();
      setVisible(true);
-     
+     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
      
     }
 
@@ -266,3 +266,4 @@ public class ComunicacaoInterna extends javax.swing.JInternalFrame {
     private javax.swing.JSeparator jSeparator1;
     // End of variables declaration//GEN-END:variables
 }
+
