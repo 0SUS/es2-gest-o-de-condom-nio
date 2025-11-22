@@ -21,6 +21,7 @@ public class GestaoTaxas extends javax.swing.JInternalFrame {
         setMaximizable(true);
         setResizable(true);
         configurarPlaceholders();
+      setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
     }
 
     private void configurarPlaceholders() {
@@ -284,3 +285,4 @@ public class GestaoTaxas extends javax.swing.JInternalFrame {
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
 }
+
