@@ -196,35 +196,41 @@ public class ComunicacaoInterna extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_campoDestinatarioActionPerformed
 
     private void btnEnviarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEnviarActionPerformed
-         String destinatario = campoDestinatario.getText();
-    String assunto = campoAssunto.getText();
-    String conteudo = campoConteudo.getText();
+         String destinatario = campoDestinatario.getText().trim();
+    String assunto = campoAssunto.getText().trim();
+    String conteudo = campoConteudo.getText().trim();
 
-    if (destinatario.isEmpty() || assunto.isEmpty() || conteudo.isEmpty()
-            || destinatario.equals("Destinatário") || assunto.equals("Assunto") || conteudo.equals("Conteúdo")) {
+    // Validação
+    if (destinatario.isEmpty() || destinatario.equals("Destinatário") ||
+        assunto.isEmpty() || assunto.equals("Assunto") ||
+        conteudo.isEmpty() || conteudo.equals("Conteúdo")) {
+
         JOptionPane.showMessageDialog(this, "Preencha todos os campos antes de enviar.");
         return;
     }
 
-    // Adiciona mensagem no histórico corretamente
-    String novaMensagem = 
-            "Para: " + destinatario +
-            "\nAssunto: " + assunto +
-            "\nMensagem: " + conteudo +
-            "\n------------------------------------\n";
+    // Monta um cartão estilizado similar ao da tela de taxas
+    String novaMensagem =
+        "────────── Mensagem Enviada ──────────\n" +
+        "Para: " + destinatario + "\n" +
+        "Assunto: " + assunto + "\n" +
+        "Conteúdo:\n" + conteudo + "\n" +
+        "──────────────────────────────────────\n\n";
 
+    // Adiciona no histórico
     histórico.append(novaMensagem);
 
     // Scroll sempre no final
     histórico.setCaretPosition(histórico.getDocument().getLength());
 
-    // Limpa campos
+    // Reseta os campos
     campoDestinatario.setText("Destinatário");
-    campoAssunto.setText("Assunto");
-    campoConteudo.setText("Conteúdo");
-
     campoDestinatario.setForeground(Color.GRAY);
+
+    campoAssunto.setText("Assunto");
     campoAssunto.setForeground(Color.GRAY);
+
+    campoConteudo.setText("Conteúdo");
     campoConteudo.setForeground(Color.GRAY);
     }//GEN-LAST:event_btnEnviarActionPerformed
 
@@ -266,4 +272,5 @@ public class ComunicacaoInterna extends javax.swing.JInternalFrame {
     private javax.swing.JSeparator jSeparator1;
     // End of variables declaration//GEN-END:variables
 }
+
 
