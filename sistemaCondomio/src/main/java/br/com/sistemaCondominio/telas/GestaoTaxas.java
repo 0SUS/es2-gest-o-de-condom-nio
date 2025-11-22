@@ -210,40 +210,37 @@ public class GestaoTaxas extends javax.swing.JInternalFrame {
     // Verifica se todos os campos foram preenchidos
     if (unidade.isEmpty() || unidade.equals("Unidade") ||
         valor.isEmpty() || valor.equals("Valor") ||
-        data.isEmpty() || data.equals("Data") ||
-        status.isEmpty() || status.equals("Status")) {
+        data.isEmpty() || data.equals("Data de Vencimento") ||
+        status.isEmpty() || status.equals("Status de Pagamento")) {
         
         JOptionPane.showMessageDialog(this, "Por favor, preencha todos os campos antes de confirmar.");
         return;
     }
 
-    // Monta a nova linha de histórico
-    String novaLinha = "Unidade: " + unidade +
-                       " | Valor: " + valor +
-                       " | Data: " + data +
-                       " | Status: " + status;
+    // Monta o cartão com visual profissional
+    String novaTaxa =
+    "────────── Taxa Registrada ──────────\n" +
+    "Unidade: " + unidade + "\n" +
+    "Valor: " + valor + "\n" +
+    "Vencimento: " + data + "\n" +
+    "Status: " + status + "\n" +
+    "─────────────────────────────────────\n\n";
 
-    // Adiciona ao histórico (uma embaixo da outra)
+    // Adiciona ao histórico
     String historicoAtual = areaHistorico.getText();
-    if (!historicoAtual.isEmpty()) {
-        historicoAtual += "\n";
-    }
-    historicoAtual += novaLinha;
+    areaHistorico.setText(historicoAtual + novaTaxa);
 
-    // Atualiza a área de histórico
-    areaHistorico.setText(historicoAtual);
-
-    // Reseta os campos para os placeholders
+    // Reseta os campos
     campoUnidade.setText("Unidade");
     campoUnidade.setForeground(java.awt.Color.GRAY);
 
     campoValor.setText("Valor");
     campoValor.setForeground(java.awt.Color.GRAY);
 
-    campoData.setText("Data");
+    campoData.setText("Data de Vencimento");
     campoData.setForeground(java.awt.Color.GRAY);
 
-    campoStatus.setText("Status");
+    campoStatus.setText("Status de Pagamento");
     campoStatus.setForeground(java.awt.Color.GRAY);
     }//GEN-LAST:event_btnConfirmarActionPerformed
 
@@ -285,4 +282,5 @@ public class GestaoTaxas extends javax.swing.JInternalFrame {
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
 }
+
 
