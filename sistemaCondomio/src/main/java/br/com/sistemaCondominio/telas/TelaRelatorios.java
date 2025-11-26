@@ -180,9 +180,9 @@ public class TelaRelatorios extends JInternalFrame {
                 break;
             case "Taxas de Condomínio":
                 model.setColumnIdentifiers(new String[]{"ID Taxa", "Nº Residência", "Valor", "Vencimento", "Status"});
-                sql.append("SELECT t.id_taxa, r.numero_residencia, t.valor, t.data_vencimento, t.status FROM taxas t JOIN residencias r ON t.id_residencia = r.id_residencia WHERE 1=1 ");
+                sql.append("SELECT t.id_taxa, r.numero, t.valor, t.data_vencimento, t.status FROM taxas t JOIN residencia r ON t.id_residencia = r.id_residencia WHERE 1=1 ");
                 if (txtUnidade.getText() != null && !txtUnidade.getText().trim().isEmpty()) {
-                    sql.append("AND r.numero_residencia = ? ");
+                    sql.append("AND r.numero = ? ");
                     params.add(txtUnidade.getText().trim());
                 }
                 if (cmbStatus.getSelectedItem() != null && !cmbStatus.getSelectedItem().toString().equals("Todas")) {

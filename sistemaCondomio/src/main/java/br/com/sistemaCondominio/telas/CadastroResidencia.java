@@ -251,52 +251,32 @@ public class CadastroResidencia extends javax.swing.JInternalFrame {
             return;
         }
         // salva cadastro no banco
-        try{
+        try {
             String sqlResidencia = "INSERT INTO residencia (numero, rua, nome_proprietario, id_proprietario, area, telefone) VALUES (?,?,?,?,?,?)";
-            Integer idResidencia = null;
             PreparedStatement pstResidencia = conexao.prepareStatement(sqlResidencia, Statement.RETURN_GENERATED_KEYS);
+            
             pstResidencia.setString(1, txtNumeroResidencia.getText().trim());
             pstResidencia.setString(2, txtRuaResidencia.getText().trim());
             pstResidencia.setString(3, txtProprietarioResidencia.getText().trim());
-            pstResidencia.setInt(4,Integer.parseInt(txtIdProprietario.getText().trim()));
-            pstResidencia.setFloat(5,  Float.parseFloat(txtAreaResidencia.getText().trim()));
+            pstResidencia.setInt(4, Integer.parseInt(txtIdProprietario.getText().trim()));
+            pstResidencia.setFloat(5, Float.parseFloat(txtAreaResidencia.getText().trim().replace(",", ".")));
             pstResidencia.setString(6, txtTelefoneResidencia.getText().trim());
             
-            int resultado = pstResidencia.executeUpdate();
-            if (resultado>0){
-                ResultSet rsKeys = pstResidencia.getGeneratedKeys();
-                if (rsKeys.next()) {
-                    // Tenta obter pelo nome da coluna primeiro, depois pelo índice
-                    try {
-                        idResidencia = rsKeys.getInt("id_usuario");
-                    } catch (SQLException e) {
-                        // Se não encontrar pelo nome, tenta pelo índice
-                        idResidencia = rsKeys.getInt(1);
-                    }
-                }
-                rsKeys.close();
-            }
-             pstResidencia.close();
+            int adicionado = pstResidencia.executeUpdate();
             
-            if (idResidencia == null) {
-                JOptionPane.showMessageDialog(this, "Erro ao cadastrar Residência. Tente novamente.");
-                return;
+            if (adicionado > 0) {
+                JOptionPane.showMessageDialog(this, "Residência cadastrada com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+                limparCampos();
+            } else {
+                JOptionPane.showMessageDialog(this, "Falha ao cadastrar residência.", "Erro", JOptionPane.ERROR_MESSAGE);
             }
+            pstResidencia.close();
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao cadastrar residência: " + e.getMessage(), "Erro de Banco", JOptionPane.ERROR_MESSAGE);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Erro nos valores numéricos: " + e.getMessage(), "Erro de Formato", JOptionPane.ERROR_MESSAGE);
         }
-        catch(SQLException e){
-            JOptionPane.showMessageDialog(this, "Erro ao cadastrar residência: " + e.getMessage());
-            return;
-        }
-        //Todas as informações foram salvas na tabela residencia
-        JOptionPane.showMessageDialog(this, 
-            "Residencia cadastrado com sucesso!\n" +
-            "Numero: " + txtNumeroResidencia.getText().trim() + "\n" +
-            "Rua: " + txtRuaResidencia.getText().trim() + "\n" +
-            "Proprietario: " + txtProprietarioResidencia.getText().trim(),
-            "Cadastro Realizado", JOptionPane.INFORMATION_MESSAGE);
-        
-        // Limpa os campos
-        limparCampos();
     }//GEN-LAST:event_btnSalvaResidenciaActionPerformed
 
     

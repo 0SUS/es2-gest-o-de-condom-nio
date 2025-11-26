@@ -208,7 +208,8 @@ public class GestaoTaxas extends javax.swing.JInternalFrame {
 
         try {
             // 1. Validar e obter o ID da residência
-            String sqlResidencia = "SELECT id_residencia FROM residencias WHERE numero_residencia = ?";
+            // Tabela: residencia, Coluna: numero
+            String sqlResidencia = "SELECT id_residencia FROM residencia WHERE numero = ?";
             PreparedStatement pstRes = conexao.prepareStatement(sqlResidencia);
             pstRes.setString(1, numeroResidencia);
             ResultSet rs = pstRes.executeQuery();
