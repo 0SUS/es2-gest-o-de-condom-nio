@@ -42,16 +42,20 @@ public class TelaRelatorios extends JInternalFrame {
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         getContentPane().add(mainPanel);
 
-        // --- 1. Seção de Seleção (Norte) ---
+        // --- Painel Superior (Seleção + Filtros) ---
+        JPanel panelSuperior = new JPanel();
+        panelSuperior.setLayout(new BoxLayout(panelSuperior, BoxLayout.Y_AXIS));
+
+        // --- 1. Seção de Seleção ---
         JPanel panelSelecao = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panelSelecao.add(new JLabel("Selecione o Tipo de Relatório:"));
         cmbTipoRelatorio = new JComboBox<>(new String[]{
             "Selecione...", "Unidades", "Moradores", "Taxas de Condomínio", "Reservas", "Manutenções"
         });
         panelSelecao.add(cmbTipoRelatorio);
-        mainPanel.add(panelSelecao, BorderLayout.NORTH);
+        panelSuperior.add(panelSelecao);
 
-        // --- 2. Seção de Filtros (Centro) ---
+        // --- 2. Seção de Filtros ---
         panelFiltros = new JPanel();
         panelFiltros.setBorder(BorderFactory.createTitledBorder(null, "Filtros", TitledBorder.LEADING, TitledBorder.TOP, null, null));
         panelFiltros.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 5));
@@ -74,9 +78,13 @@ public class TelaRelatorios extends JInternalFrame {
         panelFiltros.add(txtUnidade);
         panelFiltros.add(lblStatus);
         panelFiltros.add(cmbStatus);
-        mainPanel.add(panelFiltros, BorderLayout.CENTER);
+        
+        panelSuperior.add(panelFiltros);
+        
+        // Adiciona o painel superior ao Norte do principal
+        mainPanel.add(panelSuperior, BorderLayout.NORTH);
 
-        // --- 3. Seção de Resultados e Ações (Sul) ---
+        // --- 3. Seção de Resultados e Ações (Centro) ---
         JPanel panelAcoesResultados = new JPanel(new BorderLayout(10, 10));
         
         // Botões
@@ -107,7 +115,8 @@ public class TelaRelatorios extends JInternalFrame {
         scrollPaneResultado = new JScrollPane(tblResultado);
         panelAcoesResultados.add(scrollPaneResultado, BorderLayout.CENTER);
 
-        mainPanel.add(panelAcoesResultados, BorderLayout.SOUTH);
+        // Adiciona a seção de resultados ao Centro do principal
+        mainPanel.add(panelAcoesResultados, BorderLayout.CENTER);
 
         // --- Lógica de Eventos ---
         cmbTipoRelatorio.addItemListener(e -> {
