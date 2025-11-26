@@ -35,7 +35,7 @@ public class CadastroResidencia extends javax.swing.JInternalFrame {
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         txtNumeroResidencia = new javax.swing.JTextField();
-        txtTamanhoResidencia = new javax.swing.JTextField();
+        txtAreaResidencia = new javax.swing.JTextField();
         txtProprietarioResidencia = new javax.swing.JTextField();
         txtTelefoneResidencia = new javax.swing.JTextField();
         btnSalvaResidencia = new javax.swing.JButton();
@@ -98,7 +98,7 @@ public class CadastroResidencia extends javax.swing.JInternalFrame {
                             .addGap(18, 18, 18)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                 .addComponent(txtProprietarioResidencia, javax.swing.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE)
-                                .addComponent(txtTamanhoResidencia)
+                                .addComponent(txtAreaResidencia)
                                 .addComponent(txtRuaResidencia)
                                 .addComponent(txtNumeroResidencia)))
                         .addGroup(layout.createSequentialGroup()
@@ -132,7 +132,7 @@ public class CadastroResidencia extends javax.swing.JInternalFrame {
                 .addGap(14, 14, 14)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(txtTamanhoResidencia, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtAreaResidencia, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(29, 29, 29)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
@@ -156,7 +156,14 @@ public class CadastroResidencia extends javax.swing.JInternalFrame {
     private void txtNumeroResidenciaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNumeroResidenciaActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtNumeroResidenciaActionPerformed
-
+    private void limparCampos() {
+        txtNumeroResidencia.setText(null);
+        txtRuaResidencia.setText(null);
+        txtAreaResidencia.setText(null);
+        txtProprietarioResidencia.setText(null);
+        txtIdProprietario.setText(null);
+        txtTelefoneResidencia.setText(null);
+    }
     private void btnSalvaResidenciaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalvaResidenciaActionPerformed
         // validação dos campos obrigatórios:
         if (txtNumeroResidencia.getText().trim().isEmpty()) {
@@ -169,9 +176,9 @@ public class CadastroResidencia extends javax.swing.JInternalFrame {
             txtRuaResidencia.requestFocus();
             return;
         }
-        if (txtTamanhoResidencia.getText().trim().isEmpty()) {
+        if (txtAreaResidencia.getText().trim().isEmpty()) {
             JOptionPane.showMessageDialog(this, "Por favor, preencha o tamanho da residência.");
-            txtTamanhoResidencia.requestFocus();
+            txtAreaResidencia.requestFocus();
             return;
         }
         if (txtProprietarioResidencia.getText().trim().isEmpty()) {
@@ -189,13 +196,34 @@ public class CadastroResidencia extends javax.swing.JInternalFrame {
             txtTelefoneResidencia.requestFocus();
             return;
         }
+        // verifica se foi inserido um numero no campo area
+            try{
+                
+               String area_txt = txtAreaResidencia.getText().trim();
+               area_txt = area_txt.replace(",", ".");
+              float area_residencia = Float.parseFloat(area_txt);
+              if(area_residencia <= 0){
+                  JOptionPane.showMessageDialog(this, 
+                "A área deve ser maior que zero.Por favor, coloque outro valor",
+                "Valor inválido", JOptionPane.WARNING_MESSAGE);
+                 txtAreaResidencia.setText(""); 
+                 txtAreaResidencia.requestFocus();
+                  return;
+              }
+            }
+             catch (NumberFormatException ex){
+                 JOptionPane.showMessageDialog(this, 
+                "Área inválida! Digite apenas números.",
+                "Erro de Formato", JOptionPane.ERROR_MESSAGE);
+                txtAreaResidencia.setText(""); 
+                txtAreaResidencia.requestFocus();
+             }
         // verifica se o id do proprietario é válido
-        String sqlVerifica = "SELECT COUNT(*) FROM usuario WHERE id_usuario = ?";
-        //int id_usuario = Integer.parseInt(txtIdProprietario.getText().trim());
         try{
-            int id_usuario = Integer.parseInt(txtIdProprietario.getText().trim());
+            String sqlVerifica = "SELECT COUNT(*) FROM usuario WHERE id_usuario = ?";
+            int id_proprietario = Integer.parseInt(txtIdProprietario.getText().trim());
             PreparedStatement pstVerifica = conexao.prepareStatement(sqlVerifica);
-            pstVerifica.setInt(1, id_usuario);
+            pstVerifica.setInt(1, id_proprietario);
             ResultSet rs = pstVerifica.executeQuery();
             if (rs.next() && rs.getInt(1) == 0) {
                 JOptionPane.showMessageDialog(this, 
@@ -222,36 +250,53 @@ public class CadastroResidencia extends javax.swing.JInternalFrame {
                 "Erro de Banco", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        String sqlInsert = "INSERT INTO residencias (numero_residencia, rua, tamanho_m2, proprietario_nome, proprietario_telefone, id_usuario_proprietario) VALUES (?, ?, ?, ?, ?, ?)";
-        try {
-            PreparedStatement pstInsert = conexao.prepareStatement(sqlInsert);
-            pstInsert.setString(1, txtNumeroResidencia.getText().trim());
-            pstInsert.setString(2, txtRuaResidencia.getText().trim());
-            pstInsert.setDouble(3, Double.parseDouble(txtTamanhoResidencia.getText().trim()));
-            pstInsert.setString(4, txtProprietarioResidencia.getText().trim());
-            pstInsert.setString(5, txtTelefoneResidencia.getText().trim());
-            pstInsert.setInt(6, Integer.parseInt(txtIdProprietario.getText().trim()));
-
-            int adicionado = pstInsert.executeUpdate();
-
-            if (adicionado > 0) {
-                JOptionPane.showMessageDialog(this, "Residência cadastrada com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-                // Limpar campos
-                txtNumeroResidencia.setText("");
-                txtRuaResidencia.setText("");
-                txtTamanhoResidencia.setText("");
-                txtProprietarioResidencia.setText("");
-                txtIdProprietario.setText("");
-                txtTelefoneResidencia.setText("");
-            } else {
-                JOptionPane.showMessageDialog(this, "Falha ao cadastrar a residência.", "Erro", JOptionPane.ERROR_MESSAGE);
+        // salva cadastro no banco
+        try{
+            String sqlResidencia = "INSERT INTO residencia (numero, rua, nome_proprietario, id_proprietario, area, telefone) VALUES (?,?,?,?,?,?)";
+            Integer idResidencia = null;
+            PreparedStatement pstResidencia = conexao.prepareStatement(sqlResidencia, Statement.RETURN_GENERATED_KEYS);
+            pstResidencia.setString(1, txtNumeroResidencia.getText().trim());
+            pstResidencia.setString(2, txtRuaResidencia.getText().trim());
+            pstResidencia.setString(3, txtProprietarioResidencia.getText().trim());
+            pstResidencia.setInt(4,Integer.parseInt(txtIdProprietario.getText().trim()));
+            pstResidencia.setFloat(5,  Float.parseFloat(txtAreaResidencia.getText().trim()));
+            pstResidencia.setString(6, txtTelefoneResidencia.getText().trim());
+            
+            int resultado = pstResidencia.executeUpdate();
+            if (resultado>0){
+                ResultSet rsKeys = pstResidencia.getGeneratedKeys();
+                if (rsKeys.next()) {
+                    // Tenta obter pelo nome da coluna primeiro, depois pelo índice
+                    try {
+                        idResidencia = rsKeys.getInt("id_usuario");
+                    } catch (SQLException e) {
+                        // Se não encontrar pelo nome, tenta pelo índice
+                        idResidencia = rsKeys.getInt(1);
+                    }
+                }
+                rsKeys.close();
             }
-            pstInsert.close();
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Erro ao salvar residência: " + e.getMessage(), "Erro de Banco de Dados", JOptionPane.ERROR_MESSAGE);
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Erro de formato em campos numéricos (tamanho, ID).", "Erro de Formato", JOptionPane.ERROR_MESSAGE);
+             pstResidencia.close();
+            
+            if (idResidencia == null) {
+                JOptionPane.showMessageDialog(this, "Erro ao cadastrar Residência. Tente novamente.");
+                return;
+            }
         }
+        catch(SQLException e){
+            JOptionPane.showMessageDialog(this, "Erro ao cadastrar residência: " + e.getMessage());
+            return;
+        }
+        //Todas as informações foram salvas na tabela residencia
+        JOptionPane.showMessageDialog(this, 
+            "Residencia cadastrado com sucesso!\n" +
+            "Numero: " + txtNumeroResidencia.getText().trim() + "\n" +
+            "Rua: " + txtRuaResidencia.getText().trim() + "\n" +
+            "Proprietario: " + txtProprietarioResidencia.getText().trim(),
+            "Cadastro Realizado", JOptionPane.INFORMATION_MESSAGE);
+        
+        // Limpa os campos
+        limparCampos();
     }//GEN-LAST:event_btnSalvaResidenciaActionPerformed
 
     
@@ -265,11 +310,11 @@ public class CadastroResidencia extends javax.swing.JInternalFrame {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JTextField txtAreaResidencia;
     private javax.swing.JTextField txtIdProprietario;
     private javax.swing.JTextField txtNumeroResidencia;
     private javax.swing.JTextField txtProprietarioResidencia;
     private javax.swing.JTextField txtRuaResidencia;
-    private javax.swing.JTextField txtTamanhoResidencia;
     private javax.swing.JTextField txtTelefoneResidencia;
     // End of variables declaration//GEN-END:variables
 }
