@@ -286,7 +286,7 @@ public class EditarExcluirMoradores extends javax.swing.JInternalFrame {
         ));
         jScrollPane1.setViewportView(tblMoradores);
 
-        btnSalvaResidencia.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        btnSalvaResidencia.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         btnSalvaResidencia.setText("Deletar");
         btnSalvaResidencia.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -294,7 +294,7 @@ public class EditarExcluirMoradores extends javax.swing.JInternalFrame {
             }
         });
 
-        btnSalvaResidencia1.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        btnSalvaResidencia1.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         btnSalvaResidencia1.setText("Salvar Alteração");
         btnSalvaResidencia1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
