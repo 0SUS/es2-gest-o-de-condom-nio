@@ -7,6 +7,14 @@ import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.sql.*;
 import br.com.sistemaCondominio.dal.ModuloConexao;
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.Element;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfWriter;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 public class TelaRelatorios extends JInternalFrame {
 
@@ -289,9 +297,84 @@ public class TelaRelatorios extends JInternalFrame {
     }
 
     private void exportarPDF() {
-        JOptionPane.showMessageDialog(this, 
-            "Para gerar PDF real, é necessário adicionar bibliotecas como iText ou JasperReports ao projeto.\n" +
-            "Atualmente, utilize o botão 'Gerar Relatório' para visualizar os dados em formato texto.", 
-            "Funcionalidade de PDF", JOptionPane.INFORMATION_MESSAGE);
+        if (tblResultado.getRowCount() == 0) {
+            JOptionPane.showMessageDialog(this, "Não há dados para exportar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Salvar Relatório em PDF");
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        
+        // Sugerir nome do arquivo
+        String nomePadrao = "Relatorio_" + cmbTipoRelatorio.getSelectedItem().toString().replace(" ", "_") + ".pdf";
+        fileChooser.setSelectedFile(new java.io.File(nomePadrao));
+
+        int userSelection = fileChooser.showSaveDialog(this);
+
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            java.io.File fileToSave = fileChooser.getSelectedFile();
+            String filePath = fileToSave.getAbsolutePath();
+            
+            // Garante a extensão .pdf
+            if (!filePath.toLowerCase().endsWith(".pdf")) {
+                filePath += ".pdf";
+            }
+
+            Document document = new Document();
+            try {
+                PdfWriter.getInstance(document, new FileOutputStream(filePath));
+                document.open();
+
+                // Título
+                Paragraph title = new Paragraph("=== RELATÓRIO DE " + cmbTipoRelatorio.getSelectedItem().toString().toUpperCase() + " ===");
+                title.setAlignment(Element.ALIGN_CENTER);
+                title.setSpacingAfter(20);
+                document.add(title);
+
+                // Dados
+                int colCount = tblResultado.getColumnCount();
+                int rowCount = tblResultado.getRowCount();
+                
+                for (int i = 0; i < rowCount; i++) {
+                    Paragraph recordHeader = new Paragraph("Registro #" + (i + 1) + ":");
+                    recordHeader.setSpacingBefore(10);
+                    document.add(recordHeader);
+                    
+                    for (int j = 0; j < colCount; j++) {
+                        String colName = tblResultado.getColumnName(j);
+                        Object val = tblResultado.getValueAt(i, j);
+                        String text = colName + ": " + (val != null ? val.toString() : "");
+                        Paragraph line = new Paragraph(text);
+                        line.setIndentationLeft(20); // Indent content slightly
+                        document.add(line);
+                    }
+                    
+                    Paragraph separator = new Paragraph("----------------------------------------");
+                    separator.setSpacingBefore(5);
+                    document.add(separator);
+                }
+
+                // Resumo
+                Paragraph summaryHeader = new Paragraph("\n=== RESUMO ===");
+                summaryHeader.setSpacingBefore(15);
+                document.add(summaryHeader);
+                
+                Paragraph summaryContent = new Paragraph("Total de Registros: " + rowCount);
+                document.add(summaryContent);
+                
+                // Rodapé / Data
+                Paragraph footer = new Paragraph("\nGerado em: " + new java.util.Date().toString());
+                footer.setAlignment(Element.ALIGN_RIGHT);
+                document.add(footer);
+
+                document.close();
+                JOptionPane.showMessageDialog(this, "PDF exportado com sucesso!\n" + filePath);
+
+            } catch (DocumentException | IOException ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao gerar PDF: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
+            }
+        }
     }
 }
