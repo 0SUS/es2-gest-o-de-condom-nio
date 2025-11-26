@@ -167,7 +167,47 @@ public class TelaPrincipal extends javax.swing.JFrame {
 
         menurelatorio.setText("Relatórios");
         menurelatorio.setEnabled(false);
+
+        gerarRelatorio = new javax.swing.JMenuItem();
+        gerarRelatorio.setText("Gerar Relatório");
+        gerarRelatorio.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                gerarRelatorioActionPerformed(evt);
+            }
+        });
+        menurelatorio.add(gerarRelatorio);
+
+        // Adiciona listener para abrir o menu ao passar o mouse (hover)
+        menurelatorio.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                if (menurelatorio.isEnabled()) {
+                    menurelatorio.doClick();
+                }
+            }
+        });
+
         menu.add(menurelatorio);
+
+        menuAcesso = new javax.swing.JMenu();
+        menuAcesso.setText("Acesso");
+
+        controleAcesso = new javax.swing.JMenuItem();
+        controleAcesso.setText("Controle de Acesso");
+        controleAcesso.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                controleAcessoActionPerformed(evt);
+            }
+        });
+        menuAcesso.add(controleAcesso);
+
+        // Hover para menu Acesso
+        menuAcesso.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                 menuAcesso.doClick();
+            }
+        });
+
+        menu.add(menuAcesso);
 
         menuComunicacao.setText("Comunicações");
 
@@ -290,6 +330,23 @@ public class TelaPrincipal extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_gerenciarManutencoesActionPerformed
 
+    private void gerarRelatorioActionPerformed(java.awt.event.ActionEvent evt) {
+        TelaRelatorios relatorios = new TelaRelatorios();
+        Desktop.add(relatorios);
+        relatorios.setVisible(true);
+        try {
+            relatorios.setMaximum(true);
+        } catch (java.beans.PropertyVetoException e) {
+            logger.log(java.util.logging.Level.WARNING, "Não foi possível maximizar a tela de relatórios", e);
+        }
+    }
+
+    private void controleAcessoActionPerformed(java.awt.event.ActionEvent evt) {
+        TelaControleAcesso acesso = new TelaControleAcesso();
+        Desktop.add(acesso);
+        acesso.setVisible(true);
+    }
+
     private void GerenciarTaxasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GerenciarTaxasActionPerformed
         GestaoTaxas gestao = new GestaoTaxas();
     Desktop.add(gestao);
@@ -388,6 +445,8 @@ public class TelaPrincipal extends javax.swing.JFrame {
     private javax.swing.JMenuItem cadastrarResidencia;
     private javax.swing.JMenuItem editarMoradores;
     private javax.swing.JMenuItem editarResidencia;
+    private javax.swing.JMenuItem gerarRelatorio;
+    private javax.swing.JMenuItem controleAcesso;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     public static javax.swing.JLabel lblUsuario;
@@ -395,6 +454,7 @@ public class TelaPrincipal extends javax.swing.JFrame {
     private javax.swing.JMenu maisMenu;
     private javax.swing.JMenuBar menu;
     private javax.swing.JMenu menuComunicacao;
+    private javax.swing.JMenu menuAcesso;
     public static javax.swing.JMenu menuMoradores;
     private javax.swing.JMenu menuReserva;
     public static javax.swing.JMenu menuResidencias;

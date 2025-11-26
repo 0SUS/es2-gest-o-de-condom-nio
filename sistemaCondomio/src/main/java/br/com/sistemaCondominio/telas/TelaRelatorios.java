@@ -14,7 +14,7 @@ public class TelaRelatorios extends JInternalFrame {
     private JPanel panelFiltros;
     private JTextField txtDataInicio, txtDataFim, txtUnidade;
     private JComboBox<String> cmbStatus;
-    private JButton btnGerar, btnExportarPDF;
+    private JButton btnListar, btnGerarRelatorio, btnExportarPDF;
     private JLabel lblStatusRelatorio, lblDataInicio, lblDataFim, lblUnidade, lblStatus;
     private JTable tblResultado;
     private JScrollPane scrollPaneResultado;
@@ -73,11 +73,17 @@ public class TelaRelatorios extends JInternalFrame {
         
         // Botões
         JPanel panelBotoes = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
-        btnGerar = new JButton("Gerar Relatório");
-        btnGerar.setEnabled(false);
+        btnListar = new JButton("Listar");
+        btnListar.setEnabled(false);
+        
+        btnGerarRelatorio = new JButton("Gerar Relatório");
+        btnGerarRelatorio.setEnabled(false);
+        
         btnExportarPDF = new JButton("Exportar PDF");
         btnExportarPDF.setEnabled(false);
-        panelBotoes.add(btnGerar);
+        
+        panelBotoes.add(btnListar);
+        panelBotoes.add(btnGerarRelatorio);
         panelBotoes.add(btnExportarPDF);
         
         lblStatusRelatorio = new JLabel("Nenhum registro encontrado.");
@@ -102,14 +108,15 @@ public class TelaRelatorios extends JInternalFrame {
             }
         });
 
-        btnGerar.addActionListener(e -> gerarRelatorio());
+        btnListar.addActionListener(e -> listarRegistros());
+        btnGerarRelatorio.addActionListener(e -> gerarRelatorioTexto());
         btnExportarPDF.addActionListener(e -> exportarPDF());
     }
 
     private void atualizarFiltrosVisiveis() {
         String tipo = cmbTipoRelatorio.getSelectedItem().toString();
         panelFiltros.setVisible(true);
-        btnGerar.setEnabled(true);
+        btnListar.setEnabled(true);
 
         // Oculta todos por padrão
         lblDataInicio.setVisible(false); txtDataInicio.setVisible(false);
@@ -120,9 +127,12 @@ public class TelaRelatorios extends JInternalFrame {
         switch (tipo) {
             case "Selecione...":
                 panelFiltros.setVisible(false);
-                btnGerar.setEnabled(false);
+                btnListar.setEnabled(false);
                 break;
             case "Unidades":
+                lblUnidade.setVisible(true); txtUnidade.setVisible(true);
+                // Apenas filtro por unidade, sem status
+                break;
             case "Reservas":
             case "Manutenções":
                 // Nenhum filtro visível para estes relatórios
@@ -144,7 +154,7 @@ public class TelaRelatorios extends JInternalFrame {
         panelFiltros.repaint();
     }
 
-    private void gerarRelatorio() {
+    private void listarRegistros() {
         String tipoRelatorio = cmbTipoRelatorio.getSelectedItem().toString();
         if (conexao == null) {
             JOptionPane.showMessageDialog(this, "Falha na conexão com o banco de dados.");
@@ -159,9 +169,13 @@ public class TelaRelatorios extends JInternalFrame {
         // Constrói a consulta SQL baseada no tipo de relatório
         switch (tipoRelatorio) {
             case "Unidades":
-                model.setColumnIdentifiers(new String[]{"ID", "Nome", "CPF", "Telefone", "Username", "Nº Residência"});
-                // Mostra todos os registros da tabela usuario
-                sql.append("SELECT id_usuario, nome, cpf, telefone, username, numero FROM usuario");
+                model.setColumnIdentifiers(new String[]{"ID", "Número", "Rua", "Área (m²)", "Proprietário", "Telefone"});
+                sql.append("SELECT id_residencia, numero, rua, area, nome_proprietario, telefone FROM residencia WHERE 1=1 ");
+                
+                if (txtUnidade.getText() != null && !txtUnidade.getText().trim().isEmpty()) {
+                    sql.append("AND numero = ? ");
+                    params.add(txtUnidade.getText().trim());
+                }
                 break;
             case "Moradores":
                 model.setColumnIdentifiers(new String[]{"ID", "Nome", "CPF", "Telefone", "Username", "Nº Residência"});
@@ -180,14 +194,19 @@ public class TelaRelatorios extends JInternalFrame {
                 break;
             case "Taxas de Condomínio":
                 model.setColumnIdentifiers(new String[]{"ID Taxa", "Nº Residência", "Valor", "Vencimento", "Status"});
-                sql.append("SELECT t.id_taxa, r.numero, t.valor, t.data_vencimento, t.status FROM taxas t JOIN residencia r ON t.id_residencia = r.id_residencia WHERE 1=1 ");
+                sql.append("SELECT id, unidade, valor, data_vencimento, status_pagamento FROM taxas WHERE 1=1 ");
                 if (txtUnidade.getText() != null && !txtUnidade.getText().trim().isEmpty()) {
-                    sql.append("AND r.numero = ? ");
+                    sql.append("AND unidade = ? ");
                     params.add(txtUnidade.getText().trim());
                 }
                 if (cmbStatus.getSelectedItem() != null && !cmbStatus.getSelectedItem().toString().equals("Todas")) {
-                    sql.append("AND t.status = ? ");
-                    params.add(cmbStatus.getSelectedItem().toString());
+                    sql.append("AND status_pagamento = ? ");
+                    // Ajuste para mapear o status do combo (que pode ser diferente do banco) se necessário, 
+                    // mas assumindo que o combo usa os mesmos valores ou faremos a conversão simples
+                    String status = cmbStatus.getSelectedItem().toString();
+                    if(status.equals("Pendente")) status = "Pendente"; // Exemplo, se precisar ajustar
+                    if(status.equals("Paga")) status = "Pago";
+                    params.add(status);
                 }
                 break;
             case "Reservas":
@@ -217,23 +236,62 @@ public class TelaRelatorios extends JInternalFrame {
                 model.addRow(row);
             }
 
+            // Atualiza a tabela sempre, limpando se não houver resultados
+            tblResultado.setModel(model);
+
             if (model.getRowCount() > 0) {
-                tblResultado.setModel(model);
+                btnGerarRelatorio.setEnabled(true);
                 btnExportarPDF.setEnabled(true);
                 lblStatusRelatorio.setVisible(false);
             } else {
-                lblStatusRelatorio.setText("Nenhum registro encontrado para os filtros aplicados.");
+                lblStatusRelatorio.setText("Nenhum registro encontrado");
                 lblStatusRelatorio.setVisible(true);
+                btnGerarRelatorio.setEnabled(false);
                 btnExportarPDF.setEnabled(false);
             }
 
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "Erro ao gerar relatório: " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, "Erro ao listar registros: " + ex.getMessage());
         }
     }
 
+    private void gerarRelatorioTexto() {
+        if (tblResultado.getRowCount() == 0) {
+            JOptionPane.showMessageDialog(this, "Não há dados listados para gerar relatório.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        StringBuilder relatorio = new StringBuilder();
+        relatorio.append("=== RELATÓRIO DE ").append(cmbTipoRelatorio.getSelectedItem().toString().toUpperCase()).append(" ===\n\n");
+
+        int colCount = tblResultado.getColumnCount();
+        int rowCount = tblResultado.getRowCount();
+
+        for (int i = 0; i < rowCount; i++) {
+            relatorio.append("Registro #").append(i + 1).append(":\n");
+            for (int j = 0; j < colCount; j++) {
+                String colName = tblResultado.getColumnName(j);
+                Object val = tblResultado.getValueAt(i, j);
+                relatorio.append(colName).append(": ").append(val != null ? val.toString() : "").append("\n");
+            }
+            relatorio.append("----------------------------------------\n");
+        }
+
+        relatorio.append("\n=== RESUMO ===\n");
+        relatorio.append("Total de Registros: ").append(rowCount).append("\n");
+
+        JTextArea textArea = new JTextArea(relatorio.toString());
+        textArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setPreferredSize(new Dimension(500, 400));
+
+        JOptionPane.showMessageDialog(this, scrollPane, "Relatório Gerado", JOptionPane.INFORMATION_MESSAGE);
+    }
+
     private void exportarPDF() {
-        // TODO: Implementar lógica de exportação para PDF (ex: iText ou Apache PDFBox).
-        JOptionPane.showMessageDialog(this, "Relatório exportado com sucesso! (Simulação)", "Exportação PDF", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, 
+            "Para gerar PDF real, é necessário adicionar bibliotecas como iText ou JasperReports ao projeto.\n" +
+            "Atualmente, utilize o botão 'Gerar Relatório' para visualizar os dados em formato texto.", 
+            "Funcionalidade de PDF", JOptionPane.INFORMATION_MESSAGE);
     }
 }
