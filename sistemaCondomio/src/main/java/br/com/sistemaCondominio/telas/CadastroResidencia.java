@@ -3,18 +3,22 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JInternalFrame.java to edit this template
  */
 package br.com.sistemaCondominio.telas;
+import java.sql.*;
+import javax.swing.JOptionPane;
+import br.com.sistemaCondominio.dal.ModuloConexao;
 
 /**
  *
  * @author laris
  */
 public class CadastroResidencia extends javax.swing.JInternalFrame {
-
+     private Connection conexao = null;
     /**
      * Creates new form CadastroResidencia
      */
     public CadastroResidencia() {
         initComponents();
+        conexao = ModuloConexao.conector();
     }
 
     /**
@@ -38,8 +42,13 @@ public class CadastroResidencia extends javax.swing.JInternalFrame {
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         txtRuaResidencia = new javax.swing.JTextField();
+        jLabel7 = new javax.swing.JLabel();
+        txtIdProprietario = new javax.swing.JTextField();
 
-        setTitle("CadastroResidencia");
+        setClosable(true);
+        setIconifiable(true);
+        setMaximizable(true);
+        setTitle("Cadastro de Residencia");
         setPreferredSize(new java.awt.Dimension(910, 540));
 
         jLabel1.setText("*Campo Obrigatório");
@@ -58,47 +67,61 @@ public class CadastroResidencia extends javax.swing.JInternalFrame {
 
         btnSalvaResidencia.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         btnSalvaResidencia.setText("Salvar");
+        btnSalvaResidencia.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSalvaResidenciaActionPerformed(evt);
+            }
+        });
 
         jLabel5.setText("*Número:");
 
         jLabel6.setText("*Rua:");
+
+        jLabel7.setText("*ID proprietário:");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(531, 531, 531)
-                        .addComponent(btnSalvaResidencia, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(188, 188, 188)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel3)
-                            .addComponent(jLabel4)
-                            .addComponent(jLabel6)
-                            .addComponent(jLabel5))
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(txtProprietarioResidencia)
-                            .addComponent(txtTamanhoResidencia)
-                            .addComponent(txtTelefoneResidencia, javax.swing.GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
-                            .addComponent(txtRuaResidencia)
-                            .addComponent(txtNumeroResidencia))))
-                .addContainerGap(256, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(jLabel1)
-                .addGap(373, 373, 373))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel1)
+                    .addComponent(btnSalvaResidencia, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                            .addGap(188, 188, 188)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(jLabel2)
+                                .addComponent(jLabel3)
+                                .addComponent(jLabel6)
+                                .addComponent(jLabel5))
+                            .addGap(18, 18, 18)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(txtProprietarioResidencia, javax.swing.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE)
+                                .addComponent(txtTamanhoResidencia)
+                                .addComponent(txtRuaResidencia)
+                                .addComponent(txtNumeroResidencia)))
+                        .addGroup(layout.createSequentialGroup()
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(layout.createSequentialGroup()
+                                    .addGap(180, 180, 180)
+                                    .addComponent(jLabel7)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED))
+                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                    .addContainerGap()
+                                    .addComponent(jLabel4)
+                                    .addGap(35, 35, 35)))
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(txtIdProprietario, javax.swing.GroupLayout.DEFAULT_SIZE, 523, Short.MAX_VALUE)
+                                .addComponent(txtTelefoneResidencia)))))
+                .addContainerGap(97, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(15, 15, 15)
                 .addComponent(jLabel1)
-                .addGap(45, 45, 45)
+                .addGap(36, 36, 36)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(txtNumeroResidencia, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel5))
@@ -114,22 +137,124 @@ public class CadastroResidencia extends javax.swing.JInternalFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(txtProprietarioResidencia, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(23, 23, 23)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel7)
+                    .addComponent(txtIdProprietario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(16, 16, 16)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
                     .addComponent(txtTelefoneResidencia, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(67, 67, 67)
+                .addGap(28, 28, 28)
                 .addComponent(btnSalvaResidencia, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(139, Short.MAX_VALUE))
+                .addContainerGap(151, Short.MAX_VALUE))
         );
 
-        pack();
+        setBounds(0, 0, 910, 540);
     }// </editor-fold>//GEN-END:initComponents
 
     private void txtNumeroResidenciaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNumeroResidenciaActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtNumeroResidenciaActionPerformed
 
+    private void btnSalvaResidenciaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalvaResidenciaActionPerformed
+        // validação dos campos obrigatórios:
+        if (txtNumeroResidencia.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, preencha o número da residência.");
+            txtNumeroResidencia.requestFocus();
+            return;
+        }
+        if (txtRuaResidencia.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, preencha a rua da residência.");
+            txtRuaResidencia.requestFocus();
+            return;
+        }
+        if (txtTamanhoResidencia.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, preencha o tamanho da residência.");
+            txtTamanhoResidencia.requestFocus();
+            return;
+        }
+        if (txtProprietarioResidencia.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, preencha o nome do proprietário.");
+            txtProprietarioResidencia.requestFocus();
+            return;
+        }
+        if (txtIdProprietario.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, preencha o ID do proprietário.");
+            txtIdProprietario.requestFocus();
+            return;
+        } 
+        if (txtTelefoneResidencia.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, preencha o telefone do proprietário.");
+            txtTelefoneResidencia.requestFocus();
+            return;
+        }
+        // verifica se o id do proprietario é válido
+        String sqlVerifica = "SELECT COUNT(*) FROM usuario WHERE id_usuario = ?";
+        //int id_usuario = Integer.parseInt(txtIdProprietario.getText().trim());
+        try{
+            int id_usuario = Integer.parseInt(txtIdProprietario.getText().trim());
+            PreparedStatement pstVerifica = conexao.prepareStatement(sqlVerifica);
+            pstVerifica.setInt(1, id_usuario);
+            ResultSet rs = pstVerifica.executeQuery();
+            if (rs.next() && rs.getInt(1) == 0) {
+                JOptionPane.showMessageDialog(this, 
+                "Não existem moradores cadastrados com esse ID. Por favor, coloque outro.",
+                "ID inválido", JOptionPane.WARNING_MESSAGE);
+            rs.close();
+            pstVerifica.close();
+            return;
+            }
+            rs.close();
+            pstVerifica.close();
+        }
+        catch (NumberFormatException ex) {
+    
+            JOptionPane.showMessageDialog(this, 
+            "ID inválido! Digite apenas números.",
+            "Erro de Formato", JOptionPane.ERROR_MESSAGE);
+            txtIdProprietario.setText(""); 
+            txtIdProprietario.requestFocus();
+        } 
+        catch(SQLException e){
+            JOptionPane.showMessageDialog(this, 
+                "Erro ao verificar ID do proprietário: " + e.getMessage(),
+                "Erro de Banco", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        String sqlInsert = "INSERT INTO residencias (numero_residencia, rua, tamanho_m2, proprietario_nome, proprietario_telefone, id_usuario_proprietario) VALUES (?, ?, ?, ?, ?, ?)";
+        try {
+            PreparedStatement pstInsert = conexao.prepareStatement(sqlInsert);
+            pstInsert.setString(1, txtNumeroResidencia.getText().trim());
+            pstInsert.setString(2, txtRuaResidencia.getText().trim());
+            pstInsert.setDouble(3, Double.parseDouble(txtTamanhoResidencia.getText().trim()));
+            pstInsert.setString(4, txtProprietarioResidencia.getText().trim());
+            pstInsert.setString(5, txtTelefoneResidencia.getText().trim());
+            pstInsert.setInt(6, Integer.parseInt(txtIdProprietario.getText().trim()));
+
+            int adicionado = pstInsert.executeUpdate();
+
+            if (adicionado > 0) {
+                JOptionPane.showMessageDialog(this, "Residência cadastrada com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+                // Limpar campos
+                txtNumeroResidencia.setText("");
+                txtRuaResidencia.setText("");
+                txtTamanhoResidencia.setText("");
+                txtProprietarioResidencia.setText("");
+                txtIdProprietario.setText("");
+                txtTelefoneResidencia.setText("");
+            } else {
+                JOptionPane.showMessageDialog(this, "Falha ao cadastrar a residência.", "Erro", JOptionPane.ERROR_MESSAGE);
+            }
+            pstInsert.close();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao salvar residência: " + e.getMessage(), "Erro de Banco de Dados", JOptionPane.ERROR_MESSAGE);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Erro de formato em campos numéricos (tamanho, ID).", "Erro de Formato", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_btnSalvaResidenciaActionPerformed
+
+    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnSalvaResidencia;
@@ -139,6 +264,8 @@ public class CadastroResidencia extends javax.swing.JInternalFrame {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JTextField txtIdProprietario;
     private javax.swing.JTextField txtNumeroResidencia;
     private javax.swing.JTextField txtProprietarioResidencia;
     private javax.swing.JTextField txtRuaResidencia;

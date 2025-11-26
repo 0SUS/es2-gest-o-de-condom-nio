@@ -44,10 +44,14 @@ public class EditarExcluirResidencia extends javax.swing.JInternalFrame {
         btnSalvaResidencia = new javax.swing.JButton();
         btnSalvaResidencia1 = new javax.swing.JButton();
 
+        setClosable(true);
+        setIconifiable(true);
+        setMaximizable(true);
         setTitle("Editar/Excluir residência ");
+        setMinimumSize(new java.awt.Dimension(910, 540));
         setPreferredSize(new java.awt.Dimension(910, 540));
 
-        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/sistemaCondominio/icones/lupa.png"))); // NOI18N
+        jLabel1.setText("🔍 Buscar");
 
         jLabel2.setText("*Campo obrigatório");
 
@@ -117,7 +121,7 @@ public class EditarExcluirResidencia extends javax.swing.JInternalFrame {
                             .addComponent(txtNumeroResidencia)
                             .addComponent(txtProprietarioResidencia)
                             .addComponent(txtTelefoneResidencia))
-                        .addContainerGap(354, Short.MAX_VALUE))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addGroup(layout.createSequentialGroup()
@@ -169,10 +173,10 @@ public class EditarExcluirResidencia extends javax.swing.JInternalFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnSalvaResidencia1, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnSalvaResidencia, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(56, Short.MAX_VALUE))
+                .addContainerGap(49, Short.MAX_VALUE))
         );
 
-        pack();
+        setBounds(0, 0, 910, 558);
     }// </editor-fold>//GEN-END:initComponents
 
     private void txtNumeroResidenciaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNumeroResidenciaActionPerformed

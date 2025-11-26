@@ -7,7 +7,9 @@ package br.com.sistemaCondominio.telas;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-public class ComunicacaoInterna extends javax.swing.JFrame {
+
+public class ComunicacaoInterna extends javax.swing.JInternalFrame {
+
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(ComunicacaoInterna.class.getName());
 
@@ -18,23 +20,32 @@ public class ComunicacaoInterna extends javax.swing.JFrame {
        initComponents();
     configurarPlaceholders();
     configurarTela();
+     setVisible(true);
+     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+     
     }
 
     private void configurarTela() {
     // Abre em tela cheia
-    setExtendedState(JFrame.MAXIMIZED_BOTH);
+    setClosable(true);
+    setMaximizable(true);
+    setIconifiable(true);
+    setResizable(true);
 
     // Ajusta tamanhos das fontes
     Font fontePadrao = new Font("Segoe UI", Font.PLAIN, 16);
     campoDestinatario.setFont(fontePadrao);
     campoAssunto.setFont(fontePadrao);
     campoConteudo.setFont(fontePadrao);
-    areaMensagens.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+ 
     btnEnviar.setFont(new Font("Segoe UI", Font.BOLD, 16));
 
     // Configura histórico como área multilinha
-    areaMensagens.setEditable(false);
-    areaMensagens.setHorizontalAlignment(JTextField.LEFT);
+    histórico.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+    histórico.setEditable(false);
+    histórico.setLineWrap(true);
+    histórico.setWrapStyleWord(true);
+
 }
 
     private void configurarPlaceholders() {
@@ -71,15 +82,31 @@ public class ComunicacaoInterna extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jSeparator1 = new javax.swing.JSeparator();
+        jInternalFrame1 = new javax.swing.JInternalFrame();
         jLabel1 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         btnEnviar = new javax.swing.JButton();
         campoDestinatario = new javax.swing.JTextField();
         campoAssunto = new javax.swing.JTextField();
         campoConteudo = new javax.swing.JTextField();
-        areaMensagens = new javax.swing.JTextField();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        histórico = new javax.swing.JTextArea();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        jInternalFrame1.setVisible(true);
+
+        javax.swing.GroupLayout jInternalFrame1Layout = new javax.swing.GroupLayout(jInternalFrame1.getContentPane());
+        jInternalFrame1.getContentPane().setLayout(jInternalFrame1Layout);
+        jInternalFrame1Layout.setHorizontalGroup(
+            jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        jInternalFrame1Layout.setVerticalGroup(
+            jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Comunicação interna");
 
         jLabel1.setFont(new java.awt.Font("Segoe UI", 0, 36)); // NOI18N
@@ -110,53 +137,55 @@ public class ComunicacaoInterna extends javax.swing.JFrame {
         campoConteudo.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         campoConteudo.setText("Conteúdo");
 
-        areaMensagens.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        areaMensagens.setText("Histórico");
+        histórico.setColumns(20);
+        histórico.setRows(5);
+        jScrollPane1.setViewportView(histórico);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(462, 462, 462)
-                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 485, Short.MAX_VALUE)
-                .addGap(483, 483, 483))
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(areaMensagens, javax.swing.GroupLayout.PREFERRED_SIZE, 475, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                            .addGap(578, 578, 578)
-                            .addComponent(jLabel5))
-                        .addGroup(layout.createSequentialGroup()
-                            .addGap(640, 640, 640)
-                            .addComponent(btnEnviar))
-                        .addGroup(layout.createSequentialGroup()
-                            .addGap(437, 437, 437)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addComponent(campoConteudo, javax.swing.GroupLayout.PREFERRED_SIZE, 475, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(campoAssunto, javax.swing.GroupLayout.PREFERRED_SIZE, 475, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(campoDestinatario, javax.swing.GroupLayout.PREFERRED_SIZE, 475, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(272, 272, 272)
+                        .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(345, 345, 345)
+                                .addComponent(jLabel5))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(409, 409, 409)
+                                .addComponent(btnEnviar))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(212, 212, 212)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(campoAssunto, javax.swing.GroupLayout.PREFERRED_SIZE, 475, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(campoDestinatario, javax.swing.GroupLayout.PREFERRED_SIZE, 475, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(campoConteudo, javax.swing.GroupLayout.PREFERRED_SIZE, 475, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 475, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addGap(0, 217, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(20, 20, 20)
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(66, 66, 66)
-                .addComponent(areaMensagens)
-                .addGap(236, 236, 236)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(64, 64, 64)
                 .addComponent(jLabel5)
-                .addGap(50, 50, 50)
+                .addGap(18, 18, 18)
                 .addComponent(campoDestinatario)
                 .addGap(18, 18, 18)
                 .addComponent(campoAssunto)
                 .addGap(18, 18, 18)
-                .addComponent(campoConteudo, javax.swing.GroupLayout.DEFAULT_SIZE, 66, Short.MAX_VALUE)
-                .addGap(41, 41, 41)
+                .addComponent(campoConteudo)
+                .addGap(18, 18, 18)
                 .addComponent(btnEnviar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(315, 315, 315))
+                .addGap(98, 98, 98))
         );
 
         pack();
@@ -167,26 +196,41 @@ public class ComunicacaoInterna extends javax.swing.JFrame {
     }//GEN-LAST:event_campoDestinatarioActionPerformed
 
     private void btnEnviarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEnviarActionPerformed
-         String destinatario = campoDestinatario.getText();
-    String assunto = campoAssunto.getText();
-    String conteudo = campoConteudo.getText();
+         String destinatario = campoDestinatario.getText().trim();
+    String assunto = campoAssunto.getText().trim();
+    String conteudo = campoConteudo.getText().trim();
 
-    if (destinatario.isEmpty() || assunto.isEmpty() || conteudo.isEmpty()
-            || destinatario.equals("Destinatário") || assunto.equals("Assunto") || conteudo.equals("Conteúdo")) {
+    // Validação
+    if (destinatario.isEmpty() || destinatario.equals("Destinatário") ||
+        assunto.isEmpty() || assunto.equals("Assunto") ||
+        conteudo.isEmpty() || conteudo.equals("Conteúdo")) {
+
         JOptionPane.showMessageDialog(this, "Preencha todos os campos antes de enviar.");
         return;
     }
 
-    // Adiciona mensagem ao histórico
-    String novaMensagem = "\nPara: " + destinatario + "\nAssunto: " + assunto + "\nMensagem: " + conteudo + "\n-----------------------------";
-    areaMensagens.setText(areaMensagens.getText() + novaMensagem);
+    // Monta um cartão estilizado similar ao da tela de taxas
+    String novaMensagem =
+        "────────── Mensagem Enviada ──────────\n" +
+        "Para: " + destinatario + "\n" +
+        "Assunto: " + assunto + "\n" +
+        "Conteúdo:\n" + conteudo + "\n" +
+        "──────────────────────────────────────\n\n";
 
-    // Limpa campos após envio
+    // Adiciona no histórico
+    histórico.append(novaMensagem);
+
+    // Scroll sempre no final
+    histórico.setCaretPosition(histórico.getDocument().getLength());
+
+    // Reseta os campos
     campoDestinatario.setText("Destinatário");
-    campoAssunto.setText("Assunto");
-    campoConteudo.setText("Conteúdo");
     campoDestinatario.setForeground(Color.GRAY);
+
+    campoAssunto.setText("Assunto");
     campoAssunto.setForeground(Color.GRAY);
+
+    campoConteudo.setText("Conteúdo");
     campoConteudo.setForeground(Color.GRAY);
     }//GEN-LAST:event_btnEnviarActionPerformed
 
@@ -216,12 +260,17 @@ public class ComunicacaoInterna extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField areaMensagens;
     private javax.swing.JButton btnEnviar;
     private javax.swing.JTextField campoAssunto;
     private javax.swing.JTextField campoConteudo;
     private javax.swing.JTextField campoDestinatario;
+    private javax.swing.JTextArea histórico;
+    private javax.swing.JInternalFrame jInternalFrame1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JSeparator jSeparator1;
     // End of variables declaration//GEN-END:variables
 }
+
+

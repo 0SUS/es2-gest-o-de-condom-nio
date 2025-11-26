@@ -5,6 +5,8 @@ import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ItemEvent;
+import java.sql.*;
+import br.com.sistemaCondominio.dal.ModuloConexao;
 
 public class TelaRelatorios extends JInternalFrame {
 
@@ -16,8 +18,10 @@ public class TelaRelatorios extends JInternalFrame {
     private JLabel lblStatusRelatorio, lblDataInicio, lblDataFim, lblUnidade, lblStatus;
     private JTable tblResultado;
     private JScrollPane scrollPaneResultado;
+    private Connection conexao;
 
     public TelaRelatorios() {
+        conexao = ModuloConexao.conector();
         setTitle("Geração de Relatórios");
         setClosable(true);
         setIconifiable(true);
@@ -49,7 +53,7 @@ public class TelaRelatorios extends JInternalFrame {
         txtDataInicio = new JTextField(10);
         lblDataFim = new JLabel("Data Fim:");
         txtDataFim = new JTextField(10);
-        lblUnidade = new JLabel("Unidade:");
+        lblUnidade = new JLabel("Nº Residência:");
         txtUnidade = new JTextField(10);
         lblStatus = new JLabel("Status:");
         cmbStatus = new JComboBox<>();
@@ -119,10 +123,14 @@ public class TelaRelatorios extends JInternalFrame {
                 btnGerar.setEnabled(false);
                 break;
             case "Unidades":
+            case "Reservas":
+            case "Manutenções":
+                // Nenhum filtro visível para estes relatórios
+                break;
             case "Moradores":
                 lblUnidade.setVisible(true); txtUnidade.setVisible(true);
                 lblStatus.setVisible(true); cmbStatus.setVisible(true);
-                cmbStatus.setModel(new DefaultComboBoxModel<>(new String[]{"Todos", "Ativo", "Inativo"}));
+                cmbStatus.setModel(new DefaultComboBoxModel<>(new String[]{"Todos", "Morador", "Administrador"}));
                 break;
             case "Taxas de Condomínio":
                 lblDataInicio.setVisible(true); txtDataInicio.setVisible(true);
@@ -131,52 +139,96 @@ public class TelaRelatorios extends JInternalFrame {
                 lblStatus.setVisible(true); cmbStatus.setVisible(true);
                 cmbStatus.setModel(new DefaultComboBoxModel<>(new String[]{"Todas", "Paga", "Pendente"}));
                 break;
-            case "Reservas":
-            case "Manutenções":
-                lblDataInicio.setVisible(true); txtDataInicio.setVisible(true);
-                lblDataFim.setVisible(true); txtDataFim.setVisible(true);
-                lblStatus.setVisible(true); cmbStatus.setVisible(true);
-                cmbStatus.setModel(new DefaultComboBoxModel<>(new String[]{"Todas", "Agendada", "Concluída", "Cancelada"}));
-                break;
         }
         panelFiltros.revalidate();
         panelFiltros.repaint();
     }
 
     private void gerarRelatorio() {
-        lblStatusRelatorio.setVisible(false);
-        btnExportarPDF.setEnabled(false);
-        tblResultado.setModel(new DefaultTableModel()); // Limpa a tabela
-
         String tipoRelatorio = cmbTipoRelatorio.getSelectedItem().toString();
-        // TODO: Chamar o DAL (ModuloConexao) para buscar os dados no banco usando os filtros.
-
-        // Simulação de dados
-        DefaultTableModel model = new DefaultTableModel();
-        boolean hasData = false;
-
-        switch (tipoRelatorio) {
-            case "Moradores":
-                model.setColumnIdentifiers(new String[]{"ID", "Nome", "Unidade", "Telefone", "Status"});
-                model.addRow(new Object[]{"1", "João da Silva", "101A", "(11) 98765-4321", "Ativo"});
-                model.addRow(new Object[]{"2", "Maria Oliveira", "202B", "(21) 91234-5678", "Ativo"});
-                hasData = true;
-                break;
-            case "Taxas de Condomínio":
-                model.setColumnIdentifiers(new String[]{"ID Taxa", "Unidade", "Valor", "Vencimento", "Status"});
-                model.addRow(new Object[]{"T001", "101A", "R$ 500,00", "10/11/2025", "Paga"});
-                model.addRow(new Object[]{"T002", "202B", "R$ 550,00", "10/11/2025", "Pendente"});
-                hasData = true;
-                break;
-            // Adicionar outros casos de simulação aqui
+        if (conexao == null) {
+            JOptionPane.showMessageDialog(this, "Falha na conexão com o banco de dados.");
+            return;
         }
 
-        if (hasData) {
-            tblResultado.setModel(model);
-            btnExportarPDF.setEnabled(true);
-        } else {
-            lblStatusRelatorio.setText("Nenhum registro encontrado para '" + tipoRelatorio + "'.");
-            lblStatusRelatorio.setVisible(true);
+        DefaultTableModel model = new DefaultTableModel();
+        StringBuilder sql = new StringBuilder();
+        java.util.List<Object> params = new java.util.ArrayList<>();
+
+        // Constrói a consulta SQL baseada no tipo de relatório
+        // Constrói a consulta SQL baseada no tipo de relatório
+        switch (tipoRelatorio) {
+            case "Unidades":
+                model.setColumnIdentifiers(new String[]{"ID", "Nome", "CPF", "Telefone", "Username", "Nº Residência"});
+                // Mostra todos os registros da tabela usuario
+                sql.append("SELECT id_usuario, nome, cpf, telefone, username, numero FROM usuario");
+                break;
+            case "Moradores":
+                model.setColumnIdentifiers(new String[]{"ID", "Nome", "CPF", "Telefone", "Username", "Nº Residência"});
+                // Busca na tabela usuario filtrando pelo campo numero
+                sql.append("SELECT id_usuario, nome, cpf, telefone, username, numero FROM usuario WHERE 1=1 ");
+                
+                if (txtUnidade.getText() != null && !txtUnidade.getText().trim().isEmpty()) {
+                    sql.append("AND numero = ? ");
+                    params.add(txtUnidade.getText().trim());
+                }
+                
+                if (cmbStatus.getSelectedItem() != null && !cmbStatus.getSelectedItem().toString().equals("Todos")) {
+                    sql.append("AND perfil = ? ");
+                    params.add(cmbStatus.getSelectedItem().toString());
+                }
+                break;
+            case "Taxas de Condomínio":
+                model.setColumnIdentifiers(new String[]{"ID Taxa", "Nº Residência", "Valor", "Vencimento", "Status"});
+                sql.append("SELECT t.id_taxa, r.numero_residencia, t.valor, t.data_vencimento, t.status FROM taxas t JOIN residencias r ON t.id_residencia = r.id_residencia WHERE 1=1 ");
+                if (txtUnidade.getText() != null && !txtUnidade.getText().trim().isEmpty()) {
+                    sql.append("AND r.numero_residencia = ? ");
+                    params.add(txtUnidade.getText().trim());
+                }
+                if (cmbStatus.getSelectedItem() != null && !cmbStatus.getSelectedItem().toString().equals("Todas")) {
+                    sql.append("AND t.status = ? ");
+                    params.add(cmbStatus.getSelectedItem().toString());
+                }
+                break;
+            case "Reservas":
+                model.setColumnIdentifiers(new String[]{"ID", "Área", "Data", "Hora", "Morador"});
+                sql.append("SELECT r.id, r.area, r.data_reserva, r.hora_reserva, u.nome FROM reservas_areas_comuns r JOIN usuario u ON r.usuario_id = u.id_usuario");
+                break;
+            case "Manutenções":
+                model.setColumnIdentifiers(new String[]{"ID", "Área", "Tipo Problema", "Descrição", "Status"});
+                sql.append("SELECT id, area, tipo_problema, descricao, status FROM manutencoes_areas_comuns");
+                break;
+            default:
+                JOptionPane.showMessageDialog(this, "Tipo de relatório não suportado ainda.");
+                return;
+        }
+
+        try (PreparedStatement pst = conexao.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                pst.setObject(i + 1, params.get(i));
+            }
+
+            ResultSet rs = pst.executeQuery();
+            while (rs.next()) {
+                java.util.Vector<Object> row = new java.util.Vector<>();
+                for (int i = 1; i <= model.getColumnCount(); i++) {
+                    row.add(rs.getObject(i));
+                }
+                model.addRow(row);
+            }
+
+            if (model.getRowCount() > 0) {
+                tblResultado.setModel(model);
+                btnExportarPDF.setEnabled(true);
+                lblStatusRelatorio.setVisible(false);
+            } else {
+                lblStatusRelatorio.setText("Nenhum registro encontrado para os filtros aplicados.");
+                lblStatusRelatorio.setVisible(true);
+                btnExportarPDF.setEnabled(false);
+            }
+
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Erro ao gerar relatório: " + ex.getMessage());
         }
     }
 

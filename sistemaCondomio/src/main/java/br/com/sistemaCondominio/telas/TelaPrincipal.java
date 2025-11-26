@@ -6,6 +6,7 @@ package br.com.sistemaCondominio.telas;
 
 import java.text.DateFormat;
 import java.util.Date;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -44,10 +45,19 @@ public class TelaPrincipal extends javax.swing.JFrame {
         cadastrarResidencia = new javax.swing.JMenuItem();
         editarResidencia = new javax.swing.JMenuItem();
         menuReserva = new javax.swing.JMenu();
+        reservarArea = new javax.swing.JMenuItem();
         menuTaxas = new javax.swing.JMenu();
+        GerenciarTaxas = new javax.swing.JMenuItem();
         menumanutencao = new javax.swing.JMenu();
+        gerenciarManutencoes = new javax.swing.JMenuItem();
         menurelatorio = new javax.swing.JMenu();
+        gerarRelatorio = new javax.swing.JMenuItem();
+        menuAcesso = new javax.swing.JMenu();
+        controleAcesso = new javax.swing.JMenuItem();
         menuComunicacao = new javax.swing.JMenu();
+        Mensagens = new javax.swing.JMenuItem();
+        maisMenu = new javax.swing.JMenu();
+        menuSair = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Gerenciamento de condominio");
@@ -79,8 +89,14 @@ public class TelaPrincipal extends javax.swing.JFrame {
         lbldata.setText("data");
 
         menuMoradores.setText("Moradores");
+        menuMoradores.setEnabled(false);
 
         cadastraCliente.setText("Cadastrar");
+        cadastraCliente.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cadastraClienteActionPerformed(evt);
+            }
+        });
         menuMoradores.add(cadastraCliente);
 
         editarMoradores.setText("Editar/Excluir");
@@ -94,18 +110,28 @@ public class TelaPrincipal extends javax.swing.JFrame {
         menu.add(menuMoradores);
 
         menuResidencias.setText("Residências");
+        menuResidencias.setEnabled(false);
 
         cadastrarResidencia.setText("Cadastrar");
+        cadastrarResidencia.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cadastrarResidenciaActionPerformed(evt);
+            }
+        });
         menuResidencias.add(cadastrarResidencia);
 
         editarResidencia.setText("Editar/Excluir");
+        editarResidencia.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editarResidenciaActionPerformed(evt);
+            }
+        });
         menuResidencias.add(editarResidencia);
 
         menu.add(menuResidencias);
 
         menuReserva.setText("Reserva de áreas");
 
-        reservarArea = new javax.swing.JMenuItem();
         reservarArea.setText("Reservar");
         reservarArea.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -117,11 +143,20 @@ public class TelaPrincipal extends javax.swing.JFrame {
         menu.add(menuReserva);
 
         menuTaxas.setText("Taxas");
+        menuTaxas.setEnabled(false);
+
+        GerenciarTaxas.setText("Gerenciar Taxas");
+        GerenciarTaxas.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                GerenciarTaxasActionPerformed(evt);
+            }
+        });
+        menuTaxas.add(GerenciarTaxas);
+
         menu.add(menuTaxas);
 
         menumanutencao.setText("Manutenções");
 
-        gerenciarManutencoes = new javax.swing.JMenuItem();
         gerenciarManutencoes.setText("Gerenciar Manutenções");
         gerenciarManutencoes.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -129,12 +164,12 @@ public class TelaPrincipal extends javax.swing.JFrame {
             }
         });
         menumanutencao.add(gerenciarManutencoes);
-
+        
         menu.add(menumanutencao);
 
         menurelatorio.setText("Relatórios");
-
-        gerarRelatorio = new javax.swing.JMenuItem();
+        menurelatorio.setEnabled(false);
+        
         gerarRelatorio.setText("Gerar Relatório");
         gerarRelatorio.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -145,10 +180,8 @@ public class TelaPrincipal extends javax.swing.JFrame {
 
         menu.add(menurelatorio);
 
-        menuAcesso = new javax.swing.JMenu();
         menuAcesso.setText("Acesso");
-
-        controleAcesso = new javax.swing.JMenuItem();
+        
         controleAcesso.setText("Controle de Acesso");
         controleAcesso.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -156,11 +189,32 @@ public class TelaPrincipal extends javax.swing.JFrame {
             }
         });
         menuAcesso.add(controleAcesso);
-
+        
         menu.add(menuAcesso);
 
         menuComunicacao.setText("Comunicações");
+
+        Mensagens.setText("Enviar Mensagem");
+        Mensagens.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MensagensActionPerformed(evt);
+            }
+        });
+        menuComunicacao.add(Mensagens);
+
         menu.add(menuComunicacao);
+
+        maisMenu.setText("Mais");
+
+        menuSair.setText("Sair");
+        menuSair.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuSairActionPerformed(evt);
+            }
+        });
+        maisMenu.add(menuSair);
+
+        menu.add(maisMenu);
 
         setJMenuBar(menu);
 
@@ -171,11 +225,12 @@ public class TelaPrincipal extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(Desktop, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(69, 69, 69)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lbldata, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(85, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(lbldata, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(20, Short.MAX_VALUE))
+                    .addComponent(lblUsuario, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addGap(0, 0, Short.MAX_VALUE)
@@ -193,11 +248,11 @@ public class TelaPrincipal extends javax.swing.JFrame {
                 .addComponent(Desktop)
                 .addContainerGap())
             .addGroup(layout.createSequentialGroup()
-                .addGap(132, 132, 132)
+                .addGap(138, 138, 138)
                 .addComponent(lblUsuario)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lbldata)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(344, Short.MAX_VALUE))
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addGap(0, 0, Short.MAX_VALUE)
@@ -215,7 +270,17 @@ public class TelaPrincipal extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void editarMoradoresActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editarMoradoresActionPerformed
-        // TODO add your handling code here:
+         // abre tela editarExcluirMoradores
+          try {
+            EditarExcluirMoradores telaedicao = new EditarExcluirMoradores();
+            Desktop.add(telaedicao);
+            telaedicao.setVisible(true);
+            
+          } 
+          catch (Exception e) {
+            logger.log(java.util.logging.Level.WARNING, "Não foi possível maximizar a tela de editar moradores", e);
+        }
+          
     }//GEN-LAST:event_editarMoradoresActionPerformed
 
     private void formWindowActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowActivated
@@ -265,6 +330,67 @@ public class TelaPrincipal extends javax.swing.JFrame {
         acesso.setVisible(true);
     }
 
+    private void GerenciarTaxasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GerenciarTaxasActionPerformed
+        GestaoTaxas gestao = new GestaoTaxas();
+        Desktop.add(gestao);
+        gestao.setVisible(true);
+        try {
+            gestao.setMaximum(true);
+        } catch (java.beans.PropertyVetoException e) {
+            logger.log(java.util.logging.Level.WARNING, "Não foi possível maximizar a tela de gestão de taxas", e);
+        }
+    }//GEN-LAST:event_GerenciarTaxasActionPerformed
+
+    private void MensagensActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MensagensActionPerformed
+         ComunicacaoInterna tela = new ComunicacaoInterna();
+        Desktop.add(tela);
+        tela.setVisible(true);
+
+        try {
+            tela.setMaximum(true);
+        } catch (Exception e) {
+            logger.log(java.util.logging.Level.WARNING, "Não foi possível maximizar a tela de comunicações", e);
+        }
+    }//GEN-LAST:event_MensagensActionPerformed
+
+    private void cadastraClienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cadastraClienteActionPerformed
+          // abre tela CadastroMoradores
+          CadastroMoradores moradores = new CadastroMoradores();
+          Desktop.add(moradores);
+          moradores.setVisible(true);
+
+          
+    }//GEN-LAST:event_cadastraClienteActionPerformed
+
+    private void cadastrarResidenciaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cadastrarResidenciaActionPerformed
+        // abre tela para cadastro de residencia:
+            CadastroResidencia residencia = new CadastroResidencia();
+            Desktop.add(residencia);
+            residencia.setVisible(true);
+           
+    }//GEN-LAST:event_cadastrarResidenciaActionPerformed
+
+    private void editarResidenciaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editarResidenciaActionPerformed
+        // abre tela para edição de residencia:
+        try {
+        EditarExcluirResidencia telaEditar = new EditarExcluirResidencia();
+        Desktop.add(telaEditar);
+        telaEditar.setVisible(true);
+       // telaEditar.toFront(); // Traz para frente
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, "Erro ao abrir tela: " + e.getMessage());
+    }
+    }//GEN-LAST:event_editarResidenciaActionPerformed
+
+    private void menuSairActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuSairActionPerformed
+        // exibe uma caixa de dialogo
+        int sair = JOptionPane.showConfirmDialog(null, "Tem certeza que deseja sair?","Atenção",JOptionPane.YES_NO_OPTION);
+        if (sair == JOptionPane.YES_OPTION){
+        System.exit(0); // encerra o sistema
+        }
+        
+    }//GEN-LAST:event_menuSairActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -292,6 +418,8 @@ public class TelaPrincipal extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JDesktopPane Desktop;
+    private javax.swing.JMenuItem GerenciarTaxas;
+    private javax.swing.JMenuItem Mensagens;
     private javax.swing.JMenuItem cadastraCliente;
     private javax.swing.JMenuItem cadastrarResidencia;
     private javax.swing.JMenuItem editarMoradores;
@@ -300,17 +428,19 @@ public class TelaPrincipal extends javax.swing.JFrame {
     private javax.swing.JMenuItem controleAcesso;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel lblUsuario;
+    public static javax.swing.JLabel lblUsuario;
     private javax.swing.JLabel lbldata;
+    private javax.swing.JMenu maisMenu;
     private javax.swing.JMenuBar menu;
     private javax.swing.JMenu menuAcesso;
     private javax.swing.JMenu menuComunicacao;
-    private javax.swing.JMenu menuMoradores;
+    public static javax.swing.JMenu menuMoradores;
     private javax.swing.JMenu menuReserva;
-    private javax.swing.JMenu menuResidencias;
-    private javax.swing.JMenu menuTaxas;
+    public static javax.swing.JMenu menuResidencias;
+    private javax.swing.JMenuItem menuSair;
+    public static javax.swing.JMenu menuTaxas;
     private javax.swing.JMenu menumanutencao;
-    private javax.swing.JMenu menurelatorio;
+    public static javax.swing.JMenu menurelatorio;
     private javax.swing.JMenuItem reservarArea;
     private javax.swing.JMenuItem gerenciarManutencoes;
     // End of variables declaration//GEN-END:variables

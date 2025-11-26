@@ -4,17 +4,72 @@
  */
 package br.com.sistemaCondominio.telas;
 
+import java.sql.*;
+import javax.swing.JOptionPane;
+import br.com.sistemaCondominio.dal.ModuloConexao;
+import br.com.sistemaCondominio.dal.UsuarioLogado;
+import java.awt.Color;
 /**
  *
  * @author laris
  */
-public class TelaLogin extends javax.swing.JInternalFrame {
+public class TelaLogin extends javax.swing.JFrame {
+
+    Connection conexao = null;
+    PreparedStatement pst = null;
+    ResultSet rs = null;
+
+    public void logar() {
+        String sql = "SELECT * FROM usuario WHERE username = ? AND senha = ?";
+        try {
+            // prepara consulta ao banco de dados
+            pst = conexao.prepareStatement(sql);
+            pst.setString(1, txtUsuario.getText().trim());
+            String captura = new String(txtSenha.getPassword());
+            pst.setString(2, captura);
+            // executa query
+            rs = pst.executeQuery();
+            // verifica se usuario e senha estao correos
+            if (rs.next()) {
+                // Salva informações do usuário logado
+                Integer usuarioId = rs.getInt("id_usuario");
+                String username = rs.getString("username");
+                // Usa o username como identificador
+               String perfil = rs.getString(11); // Valor padrão, pode ser ajustado se houver campo perfil
+               //System.out.println(perfil);
+               UsuarioLogado.getInstance().setUsuario(usuarioId, username, perfil);
+               // libera area de acesso de acordo com o perfil
+               if(perfil.equals("Administrador")){
+                    TelaPrincipal principal = new TelaPrincipal();
+                    principal.setVisible(true);
+                    TelaPrincipal.menuMoradores.setEnabled(true);
+                    TelaPrincipal.menuResidencias.setEnabled(true);
+                    TelaPrincipal.menuTaxas.setEnabled(true);
+                    TelaPrincipal.menurelatorio.setEnabled(true);
+                    TelaPrincipal.lblUsuario.setText(rs.getString(2));
+                    TelaPrincipal.lblUsuario.setForeground(Color.blue);
+                    this.dispose(); // fecha tela de login ao abrir tela principal
+               }else{
+                   TelaPrincipal principal = new TelaPrincipal();
+                    principal.setVisible(true);
+                    TelaPrincipal.lblUsuario.setText(rs.getString(2));
+                    this.dispose(); // fecha tela de login ao abrir tela principal
+                     //conexao.close(); // fecha conexao com banco de dados
+               }
+            } else {
+                JOptionPane.showMessageDialog(null, "Usuário ou senha inválido");
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);
+        }
+    }
 
     /**
      * Creates new form TelaLogin
      */
     public TelaLogin() {
         initComponents();
+        conexao = ModuloConexao.conector();
     }
 
     /**
@@ -32,6 +87,7 @@ public class TelaLogin extends javax.swing.JInternalFrame {
         txtSenha = new javax.swing.JPasswordField();
         btnLogin = new javax.swing.JButton();
 
+        setTitle("Tela de login");
         setPreferredSize(new java.awt.Dimension(910, 540));
 
         lblUsuario.setText("Usuário:");
@@ -39,6 +95,11 @@ public class TelaLogin extends javax.swing.JInternalFrame {
         lblSenha.setText("Senha:");
 
         btnLogin.setText("Login");
+        btnLogin.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnLoginActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -77,6 +138,44 @@ public class TelaLogin extends javax.swing.JInternalFrame {
         setBounds(0, 0, 910, 540);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
+        // TODO add your handling code here:
+        logar();
+    }//GEN-LAST:event_btnLoginActionPerformed
+/**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(TelaLogin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(TelaLogin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(TelaLogin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(TelaLogin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new TelaLogin().setVisible(true);
+            }
+        });
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnLogin;

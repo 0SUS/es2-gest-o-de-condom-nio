@@ -4,17 +4,24 @@
  */
 package br.com.sistemaCondominio.telas;
 
+import java.sql.*;
+import javax.swing.JOptionPane;
+import br.com.sistemaCondominio.dal.ModuloConexao;
+
 /**
  *
  * @author laris
  */
 public class CadastroMoradores extends javax.swing.JInternalFrame {
 
+    private Connection conexao = null;
+
     /**
      * Creates new form CadastroMoradores
      */
     public CadastroMoradores() {
         initComponents();
+        conexao = ModuloConexao.conector();
     }
 
     /**
@@ -49,7 +56,11 @@ public class CadastroMoradores extends javax.swing.JInternalFrame {
         jLabel11 = new javax.swing.JLabel();
         cbbPerfil = new javax.swing.JComboBox<>();
 
+        setClosable(true);
+        setIconifiable(true);
+        setMaximizable(true);
         setTitle("CadastroMoradores");
+        setMinimumSize(new java.awt.Dimension(910, 540));
         setPreferredSize(new java.awt.Dimension(910, 540));
 
         jLabel1.setText("*Nome");
@@ -150,7 +161,7 @@ public class CadastroMoradores extends javax.swing.JInternalFrame {
                                                     .addComponent(jLabel10)
                                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                                     .addComponent(txtSenha, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE))))))
-                                .addGap(0, 0, Short.MAX_VALUE))))))
+                                .addGap(0, 149, Short.MAX_VALUE))))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -185,27 +196,24 @@ public class CadastroMoradores extends javax.swing.JInternalFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel5)
                             .addComponent(txtPlacaVeiculo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addGap(23, 23, 23)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(23, 23, 23)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel9)
-                            .addComponent(txtLogin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(32, 32, 32)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel10)
-                            .addComponent(txtSenha, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addGap(17, 17, 17)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel10)
+                        .addComponent(txtSenha, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel9)
+                        .addComponent(txtLogin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(26, 26, 26)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel11)
                     .addComponent(cbbPerfil, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnSalvaResidencia)
-                .addContainerGap(54, Short.MAX_VALUE))
+                .addContainerGap(76, Short.MAX_VALUE))
         );
 
-        pack();
+        setBounds(0, 0, 910, 540);
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbbVeiculoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbbVeiculoActionPerformed
@@ -213,8 +221,164 @@ public class CadastroMoradores extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_cbbVeiculoActionPerformed
 
     private void btnSalvaResidenciaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalvaResidenciaActionPerformed
-        // TODO add your handling code here:
+        // Validação dos campos obrigatórios
+        if (txtNomeMorador.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, preencha o nome do morador.");
+            txtNomeMorador.requestFocus();
+            return;
+        }
+        
+        if (txtCpfMorador.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, preencha o CPF do morador.");
+            txtCpfMorador.requestFocus();
+            return;
+        }
+        
+        if (txtTelefoneMorador.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, preencha o telefone do morador.");
+            txtTelefoneMorador.requestFocus();
+            return;
+        }
+        
+        if (txtRua.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, preencha a rua.");
+            txtRua.requestFocus();
+            return;
+        }
+        
+        if (txtNumero.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, preencha o número.");
+            txtNumero.requestFocus();
+            return;
+        }
+        
+        if (txtLogin.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, preencha o login.");
+            txtLogin.requestFocus();
+            return;
+        }
+        
+        if (txtSenha.getPassword().length == 0) {
+            JOptionPane.showMessageDialog(this, "Por favor, preencha a senha.");
+            txtSenha.requestFocus();
+            return;
+        }
+        
+        String username = txtLogin.getText().trim();
+        
+        // Verifica se o username já existe
+        String sqlVerifica = "SELECT COUNT(*) FROM usuario WHERE username = ?";
+        try {
+            PreparedStatement pstVerifica = conexao.prepareStatement(sqlVerifica);
+            pstVerifica.setString(1, username);
+            ResultSet rs = pstVerifica.executeQuery();
+            
+            if (rs.next() && rs.getInt(1) > 0) {
+                JOptionPane.showMessageDialog(this, 
+                    "Este login já está em uso. Por favor, escolha outro.",
+                    "Login Duplicado", JOptionPane.WARNING_MESSAGE);
+                rs.close();
+                pstVerifica.close();
+                return;
+            }
+            rs.close();
+            pstVerifica.close();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao verificar login: " + e.getMessage());
+            return;
+        }
+        
+        // Validação do perfil
+        String perfilSelecionado = (String) cbbPerfil.getSelectedItem();
+        if (perfilSelecionado == null || perfilSelecionado.trim().isEmpty() || perfilSelecionado.equals(" ")) {
+            JOptionPane.showMessageDialog(this, "Por favor, selecione um perfil.");
+            cbbPerfil.requestFocus();
+            return;
+        }
+        
+        // Insere o usuário na tabela usuario (incluindo todos os campos obrigatórios)
+        String sqlUsuario = "INSERT INTO usuario (nome, cpf, telefone, rua, numero, veiculo, placa, username, senha, perfil) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        Integer idUsuario = null;
+        
+        try {
+            PreparedStatement pstUsuario = conexao.prepareStatement(sqlUsuario, Statement.RETURN_GENERATED_KEYS);
+            pstUsuario.setString(1, txtNomeMorador.getText().trim());
+            pstUsuario.setString(2, txtCpfMorador.getText().trim());
+            pstUsuario.setString(3, txtTelefoneMorador.getText().trim());
+            pstUsuario.setString(4, txtRua.getText().trim());
+            pstUsuario.setString(5, txtNumero.getText().trim());
+            
+            // Veículo - pode ser null se não selecionado
+            String tipoVeiculo = (String) cbbVeiculo.getSelectedItem();
+            if (tipoVeiculo == null || tipoVeiculo.trim().isEmpty() || tipoVeiculo.equals("  ")) {
+                pstUsuario.setString(6, null);
+            } else {
+                pstUsuario.setString(6, tipoVeiculo);
+            }
+            
+            // Placa - pode ser null se vazio
+            String placa = txtPlacaVeiculo.getText().trim();
+            if (placa.isEmpty()) {
+                pstUsuario.setString(7, null);
+            } else {
+                pstUsuario.setString(7, placa);
+            }
+            
+            pstUsuario.setString(8, username);
+            pstUsuario.setString(9, new String(txtSenha.getPassword()));
+            pstUsuario.setString(10, perfilSelecionado);
+            
+            int resultado = pstUsuario.executeUpdate();
+            
+            if (resultado > 0) {
+                // Obtém o ID gerado
+                ResultSet rsKeys = pstUsuario.getGeneratedKeys();
+                if (rsKeys.next()) {
+                    // Tenta obter pelo nome da coluna primeiro, depois pelo índice
+                    try {
+                        idUsuario = rsKeys.getInt("id_usuario");
+                    } catch (SQLException e) {
+                        // Se não encontrar pelo nome, tenta pelo índice
+                        idUsuario = rsKeys.getInt(1);
+                    }
+                }
+                rsKeys.close();
+            }
+            pstUsuario.close();
+            
+            if (idUsuario == null) {
+                JOptionPane.showMessageDialog(this, "Erro ao cadastrar usuário. Tente novamente.");
+                return;
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao cadastrar usuário: " + e.getMessage());
+            return;
+        }
+        
+        // Todas as informações foram salvas na tabela usuario
+        JOptionPane.showMessageDialog(this, 
+            "Morador cadastrado com sucesso!\n" +
+            "Nome: " + txtNomeMorador.getText().trim() + "\n" +
+            "Login: " + username + "\n" +
+            "Perfil: " + perfilSelecionado,
+            "Cadastro Realizado", JOptionPane.INFORMATION_MESSAGE);
+        
+        // Limpa os campos
+        limparCampos();
     }//GEN-LAST:event_btnSalvaResidenciaActionPerformed
+    
+    private void limparCampos() {
+        txtNomeMorador.setText("");
+        txtCpfMorador.setText("");
+        txtTelefoneMorador.setText("");
+        txtRua.setText("");
+        txtNumero.setText("");
+        txtPlacaVeiculo.setText("");
+        txtLogin.setText("");
+        txtSenha.setText("");
+        cbbVeiculo.setSelectedIndex(0);
+        cbbPerfil.setSelectedIndex(0);
+    }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
