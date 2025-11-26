@@ -4,9 +4,14 @@
  */
 package br.com.sistemaCondominio.telas;
 
-import java.sql.*;
-import javax.swing.JOptionPane;
 import br.com.sistemaCondominio.dal.ModuloConexao;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import javax.swing.JOptionPane;
+import org.mindrot.jbcrypt.BCrypt;
 
 /**
  *
@@ -324,8 +329,11 @@ public class CadastroMoradores extends javax.swing.JInternalFrame {
                 pstUsuario.setString(7, placa);
             }
             
+            String senha = new String(txtSenha.getPassword());
+            String senhaHash = BCrypt.hashpw(senha, BCrypt.gensalt());
+            
             pstUsuario.setString(8, username);
-            pstUsuario.setString(9, new String(txtSenha.getPassword()));
+            pstUsuario.setString(9, senhaHash);
             pstUsuario.setString(10, perfilSelecionado);
             
             int resultado = pstUsuario.executeUpdate();

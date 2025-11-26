@@ -14,6 +14,8 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import javax.swing.BorderFactory;
 import javax.swing.border.EmptyBorder;
+import org.mindrot.jbcrypt.BCrypt;
+
 
 /**
  *
@@ -26,43 +28,49 @@ public class TelaLogin extends javax.swing.JFrame {
     ResultSet rs = null;
 
     public void logar() {
-        String sql = "SELECT * FROM usuario WHERE username = ? AND senha = ?";
+        String sql = "SELECT * FROM usuario WHERE username = ?";
         try {
             // prepara consulta ao banco de dados
             pst = conexao.prepareStatement(sql);
             pst.setString(1, txtUsuario.getText().trim());
-            String captura = new String(txtSenha.getPassword());
-            pst.setString(2, captura);
+            
             // executa query
             rs = pst.executeQuery();
             // verifica se usuario e senha estao correos
             if (rs.next()) {
-                // Salva informações do usuário logado
-                Integer usuarioId = rs.getInt("id_usuario");
-                String username = rs.getString("username");
-                // Usa o username como identificador
-               String perfil = rs.getString(11); // Valor padrão, pode ser ajustado se houver campo perfil
-               //System.out.println(perfil);
-               UsuarioLogado.getInstance().setUsuario(usuarioId, username, perfil);
-               // libera area de acesso de acordo com o perfil
-               if(perfil.equals("Administrador")){
-                    TelaPrincipal principal = new TelaPrincipal();
-                    principal.setVisible(true);
-                    TelaPrincipal.menuMoradores.setEnabled(true);
-                    TelaPrincipal.menuResidencias.setEnabled(true);
-                    TelaPrincipal.menuTaxas.setEnabled(true);
-                    TelaPrincipal.menumanutencao.setEnabled(true);
-                    TelaPrincipal.menurelatorio.setEnabled(true);
-                    TelaPrincipal.lblUsuario.setText(rs.getString(2));
-                    TelaPrincipal.lblUsuario.setForeground(Color.blue);
-                    this.dispose(); // fecha tela de login ao abrir tela principal
-               }else{
-                   TelaPrincipal principal = new TelaPrincipal();
-                    principal.setVisible(true);
-                    TelaPrincipal.lblUsuario.setText(rs.getString(2));
-                    this.dispose(); // fecha tela de login ao abrir tela principal
-                     //conexao.close(); // fecha conexao com banco de dados
-               }
+                String senhaHash = rs.getString("senha");
+                String senhaDigitada = new String(txtSenha.getPassword());
+
+                if (BCrypt.checkpw(senhaDigitada, senhaHash)) {
+                    // Salva informações do usuário logado
+                    Integer usuarioId = rs.getInt("id_usuario");
+                    String username = rs.getString("username");
+                    // Usa o username como identificador
+                    String perfil = rs.getString(11); // Valor padrão, pode ser ajustado se houver campo perfil
+                    //System.out.println(perfil);
+                    UsuarioLogado.getInstance().setUsuario(usuarioId, username, perfil);
+                    // libera area de acesso de acordo com o perfil
+                    if(perfil.equals("Administrador")){
+                         TelaPrincipal principal = new TelaPrincipal();
+                         principal.setVisible(true);
+                         TelaPrincipal.menuMoradores.setEnabled(true);
+                         TelaPrincipal.menuResidencias.setEnabled(true);
+                         TelaPrincipal.menuTaxas.setEnabled(true);
+                         TelaPrincipal.menumanutencao.setEnabled(true);
+                         TelaPrincipal.menurelatorio.setEnabled(true);
+                         TelaPrincipal.lblUsuario.setText(rs.getString(2));
+                         TelaPrincipal.lblUsuario.setForeground(Color.blue);
+                         this.dispose(); // fecha tela de login ao abrir tela principal
+                    }else{
+                        TelaPrincipal principal = new TelaPrincipal();
+                         principal.setVisible(true);
+                         TelaPrincipal.lblUsuario.setText(rs.getString(2));
+                         this.dispose(); // fecha tela de login ao abrir tela principal
+                          //conexao.close(); // fecha conexao com banco de dados
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "Usuário ou senha inválido");
+                }
             } else {
                 JOptionPane.showMessageDialog(null, "Usuário ou senha inválido");
             }
