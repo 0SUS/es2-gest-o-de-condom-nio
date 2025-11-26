@@ -1,116 +1,380 @@
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JInternalFrame.java to edit this template
  */
 package br.com.sistemaCondominio.telas;
 
-import javax.swing.*;
-import java.awt.event.*;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.sql.*;
+import br.com.sistemaCondominio.dal.ModuloConexao;
+import br.com.sistemaCondominio.dal.UsuarioLogado;
+import java.util.Locale;
 
+/**
+ *
+ * @author laris
+ */
 public class GestaoTaxas extends javax.swing.JInternalFrame {
- 
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(GestaoTaxas.class.getName());
+
+    private Connection conexao = null;
+    private DefaultTableModel tableModel;
+    private NumberFormat currencyFormat;
+    private SimpleDateFormat dateFormat;
+    private boolean modoEdicao = false;
+    private Integer idTaxaEditando = null;
 
     /**
      * Creates new form GestaoTaxas
      */
     public GestaoTaxas() {
         initComponents();
+        conexao = ModuloConexao.conector();
+        currencyFormat = NumberFormat.getCurrencyInstance(Locale.of("pt", "BR"));
+        dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        setupTable();
+        populateStatusCombo();
+        atualizarTabela();
         setClosable(true);
         setIconifiable(true);
         setMaximizable(true);
         setResizable(true);
         configurarPlaceholders();
-      setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+    }
+
+    private void setupTable() {
+        String[] colunas = {"ID", "Unidade", "Valor", "Data Vencimento", "Status Pagamento", "Data Registro"};
+        tableModel = new DefaultTableModel(colunas, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        jTableTaxas.setModel(tableModel);
+        jTableTaxas.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+    }
+
+    private void populateStatusCombo() {
+        jComboBoxStatus.removeAllItems();
+        jComboBoxStatus.addItem("Pendente");
+        jComboBoxStatus.addItem("Pago");
+    }
+
+    private void atualizarTabela() {
+        String sql = "SELECT id, unidade, valor, data_vencimento, status_pagamento, data_registro " +
+                     "FROM taxas " +
+                     "ORDER BY data_vencimento DESC, data_registro DESC";
+        
+        try {
+            PreparedStatement pst = conexao.prepareStatement(sql);
+            ResultSet rs = pst.executeQuery();
+            
+            tableModel.setRowCount(0);
+            
+            while (rs.next()) {
+                Object[] row = {
+                    rs.getInt("id"),
+                    rs.getString("unidade"),
+                    currencyFormat.format(rs.getDouble("valor")),
+                    dateFormat.format(rs.getDate("data_vencimento")),
+                    rs.getString("status_pagamento"),
+                    dateFormat.format(rs.getTimestamp("data_registro"))
+                };
+                tableModel.addRow(row);
+            }
+            
+            rs.close();
+            pst.close();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao carregar taxas: " + e.getMessage());
+        }
     }
 
     private void configurarPlaceholders() {
-        adicionarPlaceholder(campoUnidade, "Unidade");
-        adicionarPlaceholder(campoValor, "Valor");
-        adicionarPlaceholder(campoData, "Data de Vencimento");
-        adicionarPlaceholder(campoStatus, "Status de Pagamento");
+        // Remove placeholders - vamos usar labels e campos normais
+        campoUnidade.setText("");
+        campoValor.setText("");
+        campoData.setText("");
     }
 
-    private void adicionarPlaceholder(JTextField campo, String texto) {
-    campo.setText(texto);
-    campo.setForeground(java.awt.Color.GRAY);
+    private void limparFormulario() {
+        campoUnidade.setText("");
+        campoValor.setText("");
+        campoData.setText("");
+        jComboBoxStatus.setSelectedIndex(0);
+        jTableTaxas.clearSelection();
+        modoEdicao = false;
+        idTaxaEditando = null;
+        btnConfirmar.setText("Registrar Nova Taxa");
+    }
 
-    campo.addFocusListener(new FocusAdapter() {
-        @Override
-        public void focusGained(FocusEvent e) {
-            if (campo.getText().equals(texto)) {
-                campo.setText("");
-                campo.setForeground(java.awt.Color.BLACK); // ✅ cor visível ao digitar
-            }
+    private void preencherFormularioComSelecao() {
+        int selectedRow = jTableTaxas.getSelectedRow();
+        
+        if (selectedRow == -1) {
+            return;
         }
 
-        @Override
-        public void focusLost(FocusEvent e) {
-            if (campo.getText().isEmpty()) {
-                campo.setText(texto);
-                campo.setForeground(java.awt.Color.GRAY);
+        idTaxaEditando = (Integer) tableModel.getValueAt(selectedRow, 0);
+        campoUnidade.setText(tableModel.getValueAt(selectedRow, 1).toString());
+        
+        // Remove formatação de moeda do valor
+        String valorFormatado = tableModel.getValueAt(selectedRow, 2).toString();
+        String valorSemFormatacao = valorFormatado.replace("R$", "").replace(".", "").replace(",", ".").trim();
+        campoValor.setText(valorSemFormatacao);
+        
+        campoData.setText(tableModel.getValueAt(selectedRow, 3).toString());
+        
+        String status = tableModel.getValueAt(selectedRow, 4).toString();
+        if (status.equals("Pendente")) {
+            jComboBoxStatus.setSelectedIndex(0);
+        } else {
+            jComboBoxStatus.setSelectedIndex(1);
+        }
+        
+        modoEdicao = true;
+        btnConfirmar.setText("Atualizar Taxa");
+    }
+
+    private void btnConfirmarActionPerformed(java.awt.event.ActionEvent evt) {
+        // Verifica se há usuário logado
+        if (!UsuarioLogado.getInstance().isLogado()) {
+            JOptionPane.showMessageDialog(this, "Erro: Usuário não está logado. Faça login novamente.");
+            return;
+        }
+
+        String unidade = campoUnidade.getText().trim();
+        String valorText = campoValor.getText().trim();
+        String dataText = campoData.getText().trim();
+        String status = (String) jComboBoxStatus.getSelectedItem();
+
+        // Validações
+        if (unidade.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, preencha o campo Unidade.");
+            campoUnidade.requestFocus();
+            return;
+        }
+
+        if (valorText.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, preencha o campo Valor.");
+            campoValor.requestFocus();
+            return;
+        }
+
+        double valor = 0.0;
+        try {
+            valorText = valorText.replace(",", ".");
+            valor = Double.parseDouble(valorText);
+            if (valor <= 0) {
+                JOptionPane.showMessageDialog(this, "O valor deve ser maior que zero.");
+                campoValor.requestFocus();
+                return;
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Valor inválido. Use apenas números.");
+            campoValor.requestFocus();
+            return;
+        }
+
+        if (dataText.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, preencha o campo Data de Vencimento.");
+            campoData.requestFocus();
+            return;
+        }
+
+        // Validação de data
+        Date dataVencimento;
+        try {
+            // Tenta parsear no formato dd/MM/yyyy
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            sdf.setLenient(false);
+            java.util.Date dataUtil = sdf.parse(dataText);
+            dataVencimento = new Date(dataUtil.getTime());
+        } catch (java.text.ParseException e) {
+            JOptionPane.showMessageDialog(this, 
+                "Data inválida. Use o formato DD/MM/AAAA (ex: 25/12/2024).",
+                "Erro de Formato", JOptionPane.ERROR_MESSAGE);
+            campoData.requestFocus();
+            return;
+        }
+
+        if (status == null || status.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, selecione o status de pagamento.");
+            return;
+        }
+
+        try {
+            if (modoEdicao && idTaxaEditando != null) {
+                // Atualizar taxa existente
+                String sql = "UPDATE taxas SET unidade = ?, valor = ?, data_vencimento = ?, status_pagamento = ? WHERE id = ?";
+                PreparedStatement pst = conexao.prepareStatement(sql);
+                pst.setString(1, unidade);
+                pst.setDouble(2, valor);
+                pst.setDate(3, dataVencimento);
+                pst.setString(4, status);
+                pst.setInt(5, idTaxaEditando);
+                
+                int resultado = pst.executeUpdate();
+                pst.close();
+                
+                if (resultado > 0) {
+                    JOptionPane.showMessageDialog(this, "Taxa atualizada com sucesso!");
+                    atualizarTabela();
+                    limparFormulario();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Erro ao atualizar taxa. Taxa não encontrada.");
+                }
+            } else {
+                // Inserir nova taxa
+                String sql = "INSERT INTO taxas (unidade, valor, data_vencimento, status_pagamento, usuario_registro_id) " +
+                             "VALUES (?, ?, ?, ?, ?)";
+                PreparedStatement pst = conexao.prepareStatement(sql);
+                pst.setString(1, unidade);
+                pst.setDouble(2, valor);
+                pst.setDate(3, dataVencimento);
+                pst.setString(4, status);
+                pst.setInt(5, UsuarioLogado.getInstance().getId());
+                
+                int resultado = pst.executeUpdate();
+                pst.close();
+                
+                if (resultado > 0) {
+                    JOptionPane.showMessageDialog(this, 
+                        "Taxa registrada com sucesso!\n" +
+                        "Unidade: " + unidade + "\n" +
+                        "Valor: " + currencyFormat.format(valor) + "\n" +
+                        "Vencimento: " + dataText + "\n" +
+                        "Status: " + status,
+                        "Registro Confirmado", JOptionPane.INFORMATION_MESSAGE);
+                    atualizarTabela();
+                    limparFormulario();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Erro ao registrar taxa. Tente novamente.");
+                }
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao processar taxa: " + e.getMessage());
+        }
+    }
+
+    private void btnEditarActionPerformed(java.awt.event.ActionEvent evt) {
+        int selectedRow = jTableTaxas.getSelectedRow();
+        
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Por favor, selecione uma taxa na tabela para editar.");
+            return;
+        }
+        
+        preencherFormularioComSelecao();
+    }
+
+    private void btnMarcarComoPagaActionPerformed(java.awt.event.ActionEvent evt) {
+        int selectedRow = jTableTaxas.getSelectedRow();
+        
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Por favor, selecione uma taxa na tabela.");
+            return;
+        }
+
+        int id = (Integer) tableModel.getValueAt(selectedRow, 0);
+        String statusAtual = tableModel.getValueAt(selectedRow, 4).toString();
+        
+        if (statusAtual.equals("Pago")) {
+            JOptionPane.showMessageDialog(this, "Esta taxa já está marcada como paga.");
+            return;
+        }
+
+        int confirmacao = JOptionPane.showConfirmDialog(this, 
+            "Deseja marcar esta taxa como paga?",
+            "Confirmar Pagamento", 
+            JOptionPane.YES_NO_OPTION);
+        
+        if (confirmacao == JOptionPane.YES_OPTION) {
+            try {
+                String sql = "UPDATE taxas SET status_pagamento = 'Pago' WHERE id = ?";
+                PreparedStatement pst = conexao.prepareStatement(sql);
+                pst.setInt(1, id);
+                
+                int resultado = pst.executeUpdate();
+                pst.close();
+                
+                if (resultado > 0) {
+                    JOptionPane.showMessageDialog(this, "Taxa marcada como paga com sucesso!");
+                    atualizarTabela();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Erro ao atualizar status. Taxa não encontrada.");
+                }
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(this, "Erro ao atualizar status: " + e.getMessage());
             }
         }
-    });
-}
-    
+    }
+
+    private void btnCancelarActionPerformed(java.awt.event.ActionEvent evt) {
+        limparFormulario();
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        areaHistorico = new javax.swing.JTextArea();
+        jTableTaxas = new javax.swing.JTable();
         jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
         campoUnidade = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
         campoValor = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
         campoData = new javax.swing.JTextField();
-        campoStatus = new javax.swing.JTextField();
-        btnCancelar = new javax.swing.JButton();
+        jLabel6 = new javax.swing.JLabel();
+        jComboBoxStatus = new javax.swing.JComboBox<>();
         btnConfirmar = new javax.swing.JButton();
+        btnCancelar = new javax.swing.JButton();
+        btnEditar = new javax.swing.JButton();
+        btnMarcarComoPaga = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Gestão de Taxas");
+        setTitle("Gestão de Taxas de Condomínio");
 
-        jLabel1.setFont(new java.awt.Font("Segoe UI", 0, 36)); // NOI18N
-        jLabel1.setText("Gestão de Taxas");
+        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
+        jLabel1.setText("Gestão de Taxas de Condomínio");
 
-        areaHistorico.setColumns(20);
-        areaHistorico.setRows(5);
-        jScrollPane1.setViewportView(areaHistorico);
+        jTableTaxas.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane1.setViewportView(jTableTaxas);
 
         jLabel2.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        jLabel2.setText("Registrar Nova Taxa");
+        jLabel2.setText("Lista de Taxas Cadastradas");
 
-        campoUnidade.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        campoUnidade.setText("Unidade");
-        campoUnidade.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                campoUnidadeActionPerformed(evt);
-            }
-        });
+        jLabel3.setText("Unidade:");
 
-        campoValor.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        campoValor.setText("Valor");
-        campoValor.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                campoValorActionPerformed(evt);
-            }
-        });
+        jLabel4.setText("Valor (R$):");
 
-        campoData.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        campoData.setText("Data de Vencimento");
-        campoData.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                campoDataActionPerformed(evt);
-            }
-        });
+        jLabel5.setText("Data de Vencimento (DD/MM/AAAA):");
 
-        campoStatus.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        campoStatus.setText("Status de Pagamento");
-        campoStatus.addActionListener(new java.awt.event.ActionListener() {
+        jLabel6.setText("Status de Pagamento:");
+
+        btnConfirmar.setText("Registrar Nova Taxa");
+        btnConfirmar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                campoStatusActionPerformed(evt);
+                btnConfirmarActionPerformed(evt);
             }
         });
 
@@ -121,10 +385,17 @@ public class GestaoTaxas extends javax.swing.JInternalFrame {
             }
         });
 
-        btnConfirmar.setText("Confirmar");
-        btnConfirmar.addActionListener(new java.awt.event.ActionListener() {
+        btnEditar.setText("Editar Taxa Selecionada");
+        btnEditar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnConfirmarActionPerformed(evt);
+                btnEditarActionPerformed(evt);
+            }
+        });
+
+        btnMarcarComoPaga.setText("Marcar como Paga");
+        btnMarcarComoPaga.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnMarcarComoPagaActionPerformed(evt);
             }
         });
 
@@ -133,25 +404,38 @@ public class GestaoTaxas extends javax.swing.JInternalFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addGap(20, 20, 20)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 900, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(350, 350, 350)
-                        .addComponent(jLabel2))
+                        .addComponent(jLabel1)
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(310, 310, 310)
+                        .addComponent(jLabel2)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addComponent(campoData, javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(btnCancelar)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(btnConfirmar))
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(campoUnidade, javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(campoStatus, javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(campoValor, javax.swing.GroupLayout.Alignment.LEADING)))))
-                .addContainerGap(342, Short.MAX_VALUE))
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel5)
+                            .addComponent(jLabel6))
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(campoUnidade, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(campoValor, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(campoData, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jComboBoxStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(btnConfirmar)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnCancelar)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnEditar)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnMarcarComoPaga)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -159,128 +443,53 @@ public class GestaoTaxas extends javax.swing.JInternalFrame {
                 .addGap(20, 20, 20)
                 .addComponent(jLabel1)
                 .addGap(18, 18, 18)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(40, 40, 40)
                 .addComponent(jLabel2)
-                .addGap(18, 18, 18)
-                .addComponent(campoUnidade, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(campoValor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(campoData, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(campoStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(12, 12, 12)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(30, 30, 30)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(campoUnidade, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel4)
+                    .addComponent(campoValor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
+                    .addComponent(campoData, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel6)
+                    .addComponent(jComboBoxStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(30, 30, 30)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnConfirmar)
                     .addComponent(btnCancelar)
-                    .addComponent(btnConfirmar))
-                .addContainerGap(85, Short.MAX_VALUE))
+                    .addComponent(btnEditar)
+                    .addComponent(btnMarcarComoPaga))
+                .addContainerGap(30, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void campoUnidadeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_campoUnidadeActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_campoUnidadeActionPerformed
-
-    private void campoValorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_campoValorActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_campoValorActionPerformed
-
-    private void campoDataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_campoDataActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_campoDataActionPerformed
-
-    private void campoStatusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_campoStatusActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_campoStatusActionPerformed
-
-    private void btnCancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelarActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnCancelarActionPerformed
-
-    private void btnConfirmarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConfirmarActionPerformed
-        // TODO add your handling code here:
-        String unidade = campoUnidade.getText().trim();
-    String valor = campoValor.getText().trim();
-    String data = campoData.getText().trim();
-    String status = campoStatus.getText().trim();
-
-    // Verifica se todos os campos foram preenchidos
-    if (unidade.isEmpty() || unidade.equals("Unidade") ||
-        valor.isEmpty() || valor.equals("Valor") ||
-        data.isEmpty() || data.equals("Data de Vencimento") ||
-        status.isEmpty() || status.equals("Status de Pagamento")) {
-        
-        JOptionPane.showMessageDialog(this, "Por favor, preencha todos os campos antes de confirmar.");
-        return;
-    }
-
-    // Monta o cartão com visual profissional
-    String novaTaxa =
-    "────────── Taxa Registrada ──────────\n" +
-    "Unidade: " + unidade + "\n" +
-    "Valor: " + valor + "\n" +
-    "Vencimento: " + data + "\n" +
-    "Status: " + status + "\n" +
-    "─────────────────────────────────────\n\n";
-
-    // Adiciona ao histórico
-    String historicoAtual = areaHistorico.getText();
-    areaHistorico.setText(historicoAtual + novaTaxa);
-
-    // Reseta os campos
-    campoUnidade.setText("Unidade");
-    campoUnidade.setForeground(java.awt.Color.GRAY);
-
-    campoValor.setText("Valor");
-    campoValor.setForeground(java.awt.Color.GRAY);
-
-    campoData.setText("Data de Vencimento");
-    campoData.setForeground(java.awt.Color.GRAY);
-
-    campoStatus.setText("Status de Pagamento");
-    campoStatus.setForeground(java.awt.Color.GRAY);
-    }//GEN-LAST:event_btnConfirmarActionPerformed
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
-            logger.log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(() -> new GestaoTaxas().setVisible(true));
-    }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextArea areaHistorico;
     private javax.swing.JButton btnCancelar;
     private javax.swing.JButton btnConfirmar;
+    private javax.swing.JButton btnEditar;
+    private javax.swing.JButton btnMarcarComoPaga;
     private javax.swing.JTextField campoData;
-    private javax.swing.JTextField campoStatus;
+    private javax.swing.JComboBox<String> jComboBoxStatus;
     private javax.swing.JTextField campoUnidade;
     private javax.swing.JTextField campoValor;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTable jTableTaxas;
     // End of variables declaration//GEN-END:variables
 }
-
-
