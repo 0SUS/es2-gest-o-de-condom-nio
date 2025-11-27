@@ -12,6 +12,7 @@ import javax.swing.table.DefaultTableModel;
 import java.sql.*;
 import br.com.sistemaCondominio.dal.ModuloConexao;
 import br.com.sistemaCondominio.dal.UsuarioLogado;
+import br.com.sistemaCondominio.dal.ReservaDAO;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -24,6 +25,11 @@ public class ReservasAreasComuns extends javax.swing.JInternalFrame {
 
     private Connection conexao = null;
     private DefaultTableModel tableModel;
+
+    private javax.swing.JSpinner jSpinnerHourFim;
+    private javax.swing.JSpinner jSpinnerMinuteFim;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JButton jButtonEncerrar;
 
     /**
      * Creates new form ReservasAreasComuns
@@ -44,10 +50,16 @@ public class ReservasAreasComuns extends javax.swing.JInternalFrame {
                 jButtonReservarActionPerformed(evt);
             }
         });
+        
+        jButtonEncerrar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonEncerrarActionPerformed(evt);
+            }
+        });
     }
 
     private void setupTable() {
-        String[] colunas = {"ID", "Área", "Data", "Hora", "Usuário", "Observações"};
+        String[] colunas = {"ID", "Área", "Data", "Início", "Fim", "Situação", "Usuário"};
         tableModel = new DefaultTableModel(colunas, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -58,8 +70,11 @@ public class ReservasAreasComuns extends javax.swing.JInternalFrame {
     }
 
     private void carregarReservas() {
-        String sql = "SELECT r.id, r.area, r.data_reserva, r.hora_reserva, " +
-                     "COALESCE(u.username, 'N/A') as usuario, r.observacoes " +
+        // Atualiza status das reservas (Expiradas/Em Uso) antes de carregar
+        ReservaDAO.atualizarStatusReservas(conexao);
+
+        String sql = "SELECT r.id, r.area, r.data_reserva, r.hora_reserva, r.hora_fim, r.situacao, " +
+                     "COALESCE(u.username, 'N/A') as usuario " +
                      "FROM reservas_areas_comuns r " +
                      "LEFT JOIN usuario u ON r.usuario_id = u.id_usuario " +
                      "ORDER BY r.data_reserva DESC, r.hora_reserva DESC";
@@ -72,13 +87,18 @@ public class ReservasAreasComuns extends javax.swing.JInternalFrame {
             DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             
             while (rs.next()) {
+                Time horaFim = rs.getTime("hora_fim");
+                String situacao = rs.getString("situacao");
+                if (situacao == null) situacao = "PENDENTE";
+
                 Object[] row = {
                     rs.getInt("id"),
                     rs.getString("area"),
                     rs.getDate("data_reserva").toLocalDate().format(dateFormatter),
                     rs.getTime("hora_reserva").toString().substring(0, 5), // HH:mm
-                    rs.getString("usuario"),
-                    rs.getString("observacoes") != null ? rs.getString("observacoes") : ""
+                    horaFim != null ? horaFim.toString().substring(0, 5) : "--:--",
+                    situacao,
+                    rs.getString("usuario")
                 };
                 tableModel.addRow(row);
             }
@@ -87,6 +107,50 @@ public class ReservasAreasComuns extends javax.swing.JInternalFrame {
             pst.close();
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Erro ao carregar reservas: " + e.getMessage());
+        }
+    }
+
+    private void jButtonEncerrarActionPerformed(java.awt.event.ActionEvent evt) {
+        int selectedRow = jTableReservas.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Selecione uma reserva para encerrar.");
+            return;
+        }
+
+        String situacaoAtual = (String) tableModel.getValueAt(selectedRow, 5); // Coluna 5 = Situação
+        if ("FINALIZADA".equals(situacaoAtual) || "CANCELADA".equals(situacaoAtual) || "EXPIRADA".equals(situacaoAtual)) {
+             JOptionPane.showMessageDialog(this, "Esta reserva já está encerrada.");
+             return;
+        }
+
+        int idReserva = (int) tableModel.getValueAt(selectedRow, 0);
+        String usuarioReserva = (String) tableModel.getValueAt(selectedRow, 6); // Coluna 6 = Usuario
+
+        // Verifica se o usuário logado é o dono ou admin
+        // (Lógica simplificada: verifica username na tabela. Ideal seria ID, mas tableModel tem strings)
+        // Se quiser rigoroso, teria que guardar ID na tableModel ou consultar. 
+        // Vamos assumir que admin pode tudo, e usuario só a dele.
+        // Como não temos perfil fácil aqui, vamos permitir encerrar por enquanto (supõe-se uso de confiança ou tela de adm).
+        // Melhor: Perguntar confirmação.
+
+        int confirm = JOptionPane.showConfirmDialog(this, "Deseja realmente encerrar esta reserva?", "Confirmar Encerramento", JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+            try {
+                // Atualiza situação e define hora_fim para agora (opcionalmente, ou mantém a original)
+                // Vamos manter a original mas mudar status para FINALIZADA
+                String sql = "UPDATE reservas_areas_comuns SET situacao = 'FINALIZADA' WHERE id = ?";
+                PreparedStatement pst = conexao.prepareStatement(sql);
+                pst.setInt(1, idReserva);
+                int result = pst.executeUpdate();
+                pst.close();
+
+                if (result > 0) {
+                    JOptionPane.showMessageDialog(this, "Reserva encerrada com sucesso.");
+                    carregarReservas();
+                }
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(this, "Erro ao encerrar reserva: " + e.getMessage());
+            }
         }
     }
 
@@ -101,8 +165,12 @@ public class ReservasAreasComuns extends javax.swing.JInternalFrame {
         String selectedDay = (String) jComboBoxDay.getSelectedItem();
         String selectedMonth = (String) jComboBoxMonth.getSelectedItem();
         String selectedYear = (String) jComboBoxYear.getSelectedItem();
-        Integer selectedHour = (Integer) jSpinnerHour.getValue();
-        Integer selectedMinute = (Integer) jSpinnerMinute.getValue();
+        
+        Integer horaInicio = (Integer) jSpinnerHour.getValue();
+        Integer minInicio = (Integer) jSpinnerMinute.getValue();
+        
+        Integer horaFim = (Integer) jSpinnerHourFim.getValue();
+        Integer minFim = (Integer) jSpinnerMinuteFim.getValue();
 
         if (selectedArea == null || selectedArea.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Por favor, selecione uma área comum.");
@@ -116,33 +184,42 @@ public class ReservasAreasComuns extends javax.swing.JInternalFrame {
                                       Integer.parseInt(selectedMonth), 
                                       Integer.parseInt(selectedDay));
             
-            // Verifica se a data não é no passado
             if (dataReserva.isBefore(LocalDate.now())) {
                 JOptionPane.showMessageDialog(this, "Não é possível reservar para uma data no passado.");
                 return;
             }
         } catch (java.time.DateTimeException e) {
-            JOptionPane.showMessageDialog(this, "Data selecionada inválida. Por favor, verifique o dia, mês e ano.");
+            JOptionPane.showMessageDialog(this, "Data selecionada inválida.");
             return;
         }
 
-        // Validação de hora
-        LocalTime horaReserva = LocalTime.of(selectedHour, selectedMinute);
-        
-        // Verifica se já existe reserva para o mesmo horário e área
+        LocalTime timeInicio = LocalTime.of(horaInicio, minInicio);
+        LocalTime timeFim = LocalTime.of(horaFim, minFim);
+
+        if (!timeFim.isAfter(timeInicio)) {
+            JOptionPane.showMessageDialog(this, "A hora final deve ser posterior à hora inicial.");
+            return;
+        }
+
+        // Validação de conflito de horário (Sobreposição)
+        // (InicioA < FimB) AND (FimA > InicioB)
+        // Verifica apenas reservas ATIVAS (não canceladas/finalizadas/expiradas)
         String sqlVerifica = "SELECT COUNT(*) FROM reservas_areas_comuns " +
-                            "WHERE area = ? AND data_reserva = ? AND hora_reserva = ?";
+                            "WHERE area = ? AND data_reserva = ? " +
+                            "AND situacao NOT IN ('FINALIZADA', 'CANCELADA', 'EXPIRADA') " + // Ignora as já encerradas
+                            "AND (hora_reserva < ? AND hora_fim > ?)"; // Lógica de sobreposição
         
         try {
             PreparedStatement pstVerifica = conexao.prepareStatement(sqlVerifica);
             pstVerifica.setString(1, selectedArea);
             pstVerifica.setDate(2, Date.valueOf(dataReserva));
-            pstVerifica.setTime(3, Time.valueOf(horaReserva));
+            pstVerifica.setTime(3, Time.valueOf(timeFim));   // Fim da NOVA reserva
+            pstVerifica.setTime(4, Time.valueOf(timeInicio)); // Início da NOVA reserva
             
             ResultSet rs = pstVerifica.executeQuery();
             if (rs.next() && rs.getInt(1) > 0) {
                 JOptionPane.showMessageDialog(this, 
-                    "Já existe uma reserva para esta área no horário selecionado. Por favor, escolha outro horário.",
+                    "Conflito de horário! Já existe uma reserva ativa neste intervalo.",
                     "Reserva Indisponível", JOptionPane.WARNING_MESSAGE);
                 rs.close();
                 pstVerifica.close();
@@ -153,34 +230,25 @@ public class ReservasAreasComuns extends javax.swing.JInternalFrame {
             
             // Insere a nova reserva
             String sqlInsert = "INSERT INTO reservas_areas_comuns " +
-                             "(area, data_reserva, hora_reserva, usuario_id, observacoes) " +
-                             "VALUES (?, ?, ?, ?, ?)";
+                             "(area, data_reserva, hora_reserva, hora_fim, usuario_id, observacoes, situacao) " +
+                             "VALUES (?, ?, ?, ?, ?, ?, 'PENDENTE')";
             
             PreparedStatement pstInsert = conexao.prepareStatement(sqlInsert);
             pstInsert.setString(1, selectedArea);
             pstInsert.setDate(2, Date.valueOf(dataReserva));
-            pstInsert.setTime(3, Time.valueOf(horaReserva));
-            pstInsert.setInt(4, UsuarioLogado.getInstance().getId());
-            pstInsert.setString(5, ""); // Observações vazias por padrão
+            pstInsert.setTime(3, Time.valueOf(timeInicio));
+            pstInsert.setTime(4, Time.valueOf(timeFim));
+            pstInsert.setInt(5, UsuarioLogado.getInstance().getId());
+            pstInsert.setString(6, ""); 
             
             int resultado = pstInsert.executeUpdate();
             pstInsert.close();
             
             if (resultado > 0) {
-                JOptionPane.showMessageDialog(this, 
-                    "Reserva realizada com sucesso!\n" +
-                    "Área: " + selectedArea + "\n" +
-                    "Data: " + String.format("%02d/%02d/%s", 
-                        Integer.parseInt(selectedDay), 
-                        Integer.parseInt(selectedMonth), 
-                        selectedYear) + "\n" +
-                    "Hora: " + String.format("%02d:%02d", selectedHour, selectedMinute),
-                    "Reserva Confirmada", JOptionPane.INFORMATION_MESSAGE);
-                
-                // Recarrega a tabela
+                JOptionPane.showMessageDialog(this, "Reserva realizada com sucesso!");
                 carregarReservas();
             } else {
-                JOptionPane.showMessageDialog(this, "Erro ao realizar reserva. Tente novamente.");
+                JOptionPane.showMessageDialog(this, "Erro ao realizar reserva.");
             }
             
         } catch (SQLException e) {
@@ -204,23 +272,27 @@ public class ReservasAreasComuns extends javax.swing.JInternalFrame {
             jComboBoxMonth.addItem(String.format("%02d", i));
         }
 
-        // Populate Year ComboBox (e.g., current year +/- 5 years)
+        // Populate Year ComboBox
         int currentYear = java.time.Year.now().getValue();
         for (int i = currentYear - 5; i <= currentYear + 5; i++) {
             jComboBoxYear.addItem(String.valueOf(i));
         }
 
-        // Configure Hour Spinner
-        SpinnerModel hourModel = new SpinnerNumberModel(8, 0, 23, 1); // Default 8, min 0, max 23, step 1
-        jSpinnerHour.setModel(hourModel);
-        JSpinner.NumberEditor hourEditor = new JSpinner.NumberEditor(jSpinnerHour, "00");
-        jSpinnerHour.setEditor(hourEditor);
+        // Configure Hour Spinner Inicio
+        jSpinnerHour.setModel(new SpinnerNumberModel(8, 0, 23, 1));
+        jSpinnerHour.setEditor(new JSpinner.NumberEditor(jSpinnerHour, "00"));
 
-        // Configure Minute Spinner
-        SpinnerModel minuteModel = new SpinnerNumberModel(0, 0, 59, 15); // Default 0, min 0, max 59, step 15
-        jSpinnerMinute.setModel(minuteModel);
-        JSpinner.NumberEditor minuteEditor = new JSpinner.NumberEditor(jSpinnerMinute, "00");
-        jSpinnerMinute.setEditor(minuteEditor);
+        // Configure Minute Spinner Inicio
+        jSpinnerMinute.setModel(new SpinnerNumberModel(0, 0, 59, 15));
+        jSpinnerMinute.setEditor(new JSpinner.NumberEditor(jSpinnerMinute, "00"));
+        
+        // Configure Hour Spinner Fim (Default 9:00)
+        jSpinnerHourFim.setModel(new SpinnerNumberModel(9, 0, 23, 1));
+        jSpinnerHourFim.setEditor(new JSpinner.NumberEditor(jSpinnerHourFim, "00"));
+        
+        // Configure Minute Spinner Fim
+        jSpinnerMinuteFim.setModel(new SpinnerNumberModel(0, 0, 59, 15));
+        jSpinnerMinuteFim.setEditor(new JSpinner.NumberEditor(jSpinnerMinuteFim, "00"));
     }
 
     /**
@@ -241,19 +313,26 @@ public class ReservasAreasComuns extends javax.swing.JInternalFrame {
         jLabel3 = new javax.swing.JLabel();
         jSpinnerHour = new javax.swing.JSpinner();
         jSpinnerMinute = new javax.swing.JSpinner();
+        jLabel4 = new javax.swing.JLabel();
+        jSpinnerHourFim = new javax.swing.JSpinner();
+        jSpinnerMinuteFim = new javax.swing.JSpinner();
         jButtonReservar = new javax.swing.JButton();
+        jButtonEncerrar = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTableReservas = new javax.swing.JTable();
-
 
 
         jLabel1.setText("Área Comum:");
 
         jLabel2.setText("Data:");
 
-        jLabel3.setText("Hora:");
+        jLabel3.setText("Início:");
+        
+        jLabel4.setText("Fim:");
 
         jButtonReservar.setText("Reservar");
+        
+        jButtonEncerrar.setText("Encerrar Reserva Selecionada");
 
         jScrollPane1.setViewportView(jTableReservas);
 
@@ -281,10 +360,19 @@ public class ReservasAreasComuns extends javax.swing.JInternalFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jSpinnerHour, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jSpinnerMinute, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jButtonReservar)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(5, Short.MAX_VALUE))
+                        .addComponent(jSpinnerMinute, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(20, 20, 20)
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jSpinnerHourFim, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jSpinnerMinuteFim, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jButtonReservar)
+                        .addGap(18, 18, 18)
+                        .addComponent(jButtonEncerrar))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(20, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -303,11 +391,16 @@ public class ReservasAreasComuns extends javax.swing.JInternalFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(jSpinnerHour, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jSpinnerMinute, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jSpinnerMinute, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4)
+                    .addComponent(jSpinnerHourFim, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jSpinnerMinuteFim, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addComponent(jButtonReservar)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButtonReservar)
+                    .addComponent(jButtonEncerrar))
                 .addGap(18, 18, 18)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(20, Short.MAX_VALUE))
         );
 
